@@ -1,45 +1,48 @@
-# [Project name]
+# キッチンカー在庫エージェント
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+ホットドッグの売上と棚卸しからTier 1食材の在庫と消費係数を管理するPython CLI。
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `python main.py` — 対話型CLIを起動
+- Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- Required env: `AWS_DEFAULT_REGION=us-west-2`
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Python 3.12
+- Strands Agents
+- Amazon Bedrock / Claude Sonnet
+- JSON file persistence; no database or web framework
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Agent and CLI: `main.py`
+- Tool calculations: `tools.py`
+- Atomic JSON persistence: `store.py`
+- State: `data/state.json`
+- Scope: `docs/design.md`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Implement only the three specified tools and Tier 1 inventory.
+- All arithmetic runs in Python tools, never in the model.
+- State writes replace the JSON file atomically to avoid partial-file corruption.
+- The first stock count establishes a baseline and does not alter the coefficient.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Records hot-dog sales, reports current sausage/bun stock, and reconciles physical counts.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Do not add unrequested features beyond the supplied design document.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Bedrock interaction requires the AWS credentials above.
+- Keep secrets out of source files and do not create `.env`.
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- `README.md` contains operator instructions.

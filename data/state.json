@@ -1,0 +1,39 @@
+{
+  "products": [
+    {
+      "id": "hotdog",
+      "name": "ホットドッグ",
+      "recipe": [
+        {
+          "item_id": "sausage",
+          "qty": 1
+        },
+        {
+          "item_id": "bun",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "sausage",
+      "name": "ソーセージ",
+      "tier": 1,
+      "unit": "本",
+      "stock": 200,
+      "coefficient": 1.0,
+      "last_counted": null
+    },
+    {
+      "id": "bun",
+      "name": "パン",
+      "tier": 1,
+      "unit": "個",
+      "stock": 200,
+      "coefficient": 1.0,
+      "last_counted": null
+    }
+  ],
+  "history": []
+}
