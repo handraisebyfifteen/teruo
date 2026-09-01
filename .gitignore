@@ -60,6 +60,9 @@ Thumbs.db
 # Replit artifact scaffolding (removed from repo, kept locally)
 artifacts/
 
+# Simulation scratch state (regenerated on each run)
+tests/sim_state.json
+
 # Demo shooting artifacts (regenerable / backups)
 data/state.demo-month.json
 data/state.original.json
