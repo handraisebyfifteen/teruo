@@ -10,10 +10,5 @@ runButton = "Project"
 [agent]
 expertMode = true
 
-[userenv]
-
-[userenv.shared]
-AWS_DEFAULT_REGION = "us-east-2"
-
 [nix]
 channel = "stable-25_05"

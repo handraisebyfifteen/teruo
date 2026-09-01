@@ -8,8 +8,8 @@
 
 - `python main.py` — 対話型CLIを起動（状態が空なら初回カウンセリング）
 - `python main.py --setup` — カウンセリングを強制起動
-- Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-- Required env: `AWS_DEFAULT_REGION=us-east-2`
+- Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+  `AWS_DEFAULT_REGION`（`us-east-2`）
 
 ## Stack
 
@@ -20,10 +20,12 @@
 
 ## Where things live
 
-- Agent and CLI: `main.py`
+- CLI loop and counseling agent: `main.py`
+- Operations agents (報告係・記録係・観測係, agents-as-tools): `agents.py`
 - Tool calculations: `tools.py`
 - Atomic JSON persistence: `store.py`
 - State: `data/state.json`
+- Convergence simulation: `tests/simulate_convergence.py`
 - Scope: `docs/teruo-design.md`（設計書B・正本）, `docs/teruo-instructions.md`（実装指示書）
 
 ## Architecture decisions
@@ -35,8 +37,12 @@
   the numbers on screen deterministic (design principle 3).
 - State writes replace the JSON file atomically to avoid partial-file corruption.
 - The first stock count establishes a baseline and does not alter the coefficient.
+- Operations mode splits judgment across three agents (reporter/front,
+  record keeper, observer) via agents-as-tools; the calculation layer is shared
+  and unchanged. Counseling mode stays a single agent.
 - Consumption logic has three types (design doc ch.2): `count` (fixed 1.0),
-  `weight` (coefficient learned from count diffs, bounded to recipe ±4g/serving),
+  `weight` (coefficient learned from count diffs with 0.5 smoothing toward the
+  measured value — raw updates oscillated in simulation — bounded to recipe ±4g/serving),
   `unit` (servings-per-unit learned only from used-up events, bounded to ±20%
   of past results once 3 samples exist).
 - Negative theoretical stock is kept internally (never clamped to 0, never an
