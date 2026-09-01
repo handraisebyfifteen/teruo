@@ -52,3 +52,10 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Agent/session files
+.agents/
+.conversation/
+
+# Replit artifact scaffolding (removed from repo, kept locally)
+artifacts/

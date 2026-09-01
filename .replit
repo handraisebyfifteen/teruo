@@ -1,28 +1,19 @@
-modules = ["nodejs-24", "python-3.12"]
+modules = ["python-3.12"]
 
 [deployment]
 router = "application"
 deploymentTarget = "autoscale"
 
-[deployment.postBuild]
-args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
-
 [workflows]
 runButton = "Project"
 
 [agent]
-stack = "PNPM_WORKSPACE"
 expertMode = true
-
-[postMerge]
-path = "scripts/post-merge.sh"
-timeoutMs = 20000
 
 [userenv]
 
 [userenv.shared]
-AWS_DEFAULT_REGION = "us-west-2"
+AWS_DEFAULT_REGION = "us-east-2"
 
 [nix]
 channel = "stable-25_05"
