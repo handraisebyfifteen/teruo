@@ -20,13 +20,14 @@ class StateConflictError(RuntimeError):
     """Raised when state.json changed on disk after this process loaded it."""
 
 
-# プロセス内の直列化。エージェントはツールを並列に実行することがあり、
-# その場合 load→save の読み書きが交錯して後書きが先書きを潰す。
-# ツール側がこのロックで読み書きサイクル全体を包む。
-# プロセス間（担当者2人が別々に起動）の検知は従来どおり下のハッシュ比較が担う。
+# In-process serialization. The agent sometimes runs tools in parallel;
+# without this, load→save cycles interleave and a later write clobbers an
+# earlier one. The tools wrap each whole read-write cycle in this lock.
+# Cross-process conflicts (two people running separately) are still caught
+# by the hash comparison below.
 STATE_LOCK = threading.RLock()
 
-# 直近に読み込んだ state.json のハッシュ。save_state が比較に使う。
+# Hash of the most recently loaded state.json; save_state compares against it.
 _loaded_digest: str | None = None
 
 
@@ -44,9 +45,10 @@ def load_state() -> dict[str, Any]:
 def save_state(state: dict[str, Any]) -> None:
     """Persist state atomically, refusing to clobber another writer's update.
 
-    書き込む直前にファイルをもう一度読み、自分が読み込んだ時点の内容から
-    変わっていたら StateConflictError を投げて中断する（指示書1-4）。
-    本格的なロック機構は作らない。数字が飛ぶことだけ防ぐ。
+    Just before writing, read the file once more; if it differs from what
+    this process loaded, raise StateConflictError and abort (instructions
+    1-4). No full locking machinery — the only goal is that numbers never
+    silently vanish.
     """
     global _loaded_digest
     if _loaded_digest is not None and STATE_PATH.exists():

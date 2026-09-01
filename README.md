@@ -1,128 +1,168 @@
 # teruo
 
-キッチンカー・屋台のための在庫管理エージェント。
-名前は英語の tell から。計算はさせず、動かない。教えるだけ。
+An inventory agent for food trucks and street stalls.
+The name comes from the English "tell". It doesn't calculate for show, it doesn't act — it only tells.
 
-売上からレシピ経由で在庫を減らし、棚卸しや使い切りの実測から消費係数を
-学習して直し続ける対話型CLIです。
+An interactive CLI that reduces stock from sales via recipes, and keeps
+learning and correcting consumption coefficients from real measurements —
+stock counts and emptied units.
 
-## なぜ作ったか
+*日本語版は [README.ja.md](README.ja.md) にあります。*
 
-キッチンカーの在庫は帳簿どおりに減らない。トングで盛る肉は人によって一皿の量が違い、
-レシピの75gは実際には80gにも90gにもなる。だから理論値を信じず、実測で
-消費係数を学習して直し続ける設計にした。
+## Why it exists
 
-もうひとつは報告のタイミング。営業中のピークにアラートを出されても手が離せず対応できない。
-対応できない情報は邪魔でしかない。判断ができる唯一の時間は開店前で、営業中は事実だけを
-短く言い、判断は求めない。この「現場の時間の使い方」に合わせることを設計の中心に置いた。
+Food-truck inventory never shrinks the way the books say. Meat portioned
+with tongs varies by hand — the recipe's 75g becomes 80g or 90g in practice.
+So teruo never trusts the theoretical number; it learns a consumption
+coefficient from physical counts and keeps correcting it.
 
-「学習中です」と言い続けるのも禁じた。棚卸し5回または2週間で打ち切り、それでも
-安定しないなら言い訳ではなく原因の候補を報告する。
+The other reason is timing. An alert in the middle of the lunch rush cannot
+be acted on — information you can't act on is just noise. The only time
+decisions can be made is before opening, so during service teruo states
+short facts only and never asks for a decision. Fitting the way time works
+on a food truck is the center of the design.
 
-## 数え方は品目ごとに違う
+Saying "still learning" forever is also banned. Learning is cut off after
+5 stock counts or 2 weeks; if the coefficient still hasn't settled, teruo
+reports candidate causes instead of excuses.
 
-在庫をすべて g で管理するのは現場に合わない。ソースは業務用の1本で入り、中身が何gかは
-誰も測っていない。玉ねぎは「1個で何食分」が決まっている。つまり「20g × 何食」ではなく
-**「1本で何食もつか」が現場の数え方**になる。
+## Every item counts differently
 
-そこで消費の数え方を3つに分け、係数ロジックを分岐させた。
+Managing all stock in grams doesn't match the counter. Sauce arrives as one
+commercial bottle and nobody ever weighed its contents. An onion has a fixed
+"servings per piece". The real-world unit isn't "20g × N servings" —
+**it's "how many servings does one bottle last?"**
 
-| consumption_type | 例 | 係数が表すもの | 学習のしかた |
+So consumption counting splits three ways, and the coefficient logic
+branches with it.
+
+| consumption_type | Examples | What the coefficient means | How it's learned |
 |---|---|---|---|
-| `count` | ピタパン、ナプキン | — | しない（1.0 固定） |
-| `weight` | 肉、ライス | 1食あたりの実消費量 | 棚卸しの差分から |
-| `unit` | ソース、油、玉ねぎ | 1ユニットが何食分か | 使い切った時点で確定 |
+| `count` | pita bread, napkins | — | it isn't (fixed at 1.0) |
+| `weight` | meat, rice | real consumption per serving | from stock-count differences |
+| `unit` | sauce, oil, onions | servings per unit | settled the moment a unit is emptied |
 
-ユニット型は途中の残量を測らない。開封中のボトルの「残り3割」は誰にも分からないからだ。
-代わりに空になった瞬間だけは確実に分かるので、**確定した事実だけで学習する。**
-重量型より正確で、実装も軽い。
+Unit-tracked items never measure partial contents — nobody knows whether an
+open bottle is "30% left". But the moment it goes empty is certain, so
+**teruo learns from confirmed facts only.** More accurate than weighing, and
+lighter to implement.
 
-型は品目名からは決めない。同じ玉ねぎでも、1個ずつ使う店と中子1杯を単位にする店がある。
-どちらかは初回カウンセリングの「使う時は、何を1として数えますか」で決まる。
+The type is never guessed from the item's name. The same onion is used by
+the piece in one shop and by the hotel-pan tub in another. Which one it is
+comes from the onboarding question: "When you use it, what do you count
+as one?"
 
-## 数字が合わない時にどうするか
+The measurement system is also decided at onboarding — grams or ounces
+(g/kg/ml or oz/lb/fl oz). Everything after that stays in the shop's own
+system, and same-kind unit conversions (g→kg, oz→g, ...) are automatic.
 
-係数の学習はそのまま攻撃面になる。棚卸しを少なめに申告すれば係数が上がり、以降その分の
-消費が「正常」として見えなくなる。だから盛り付けのブレの物理的な上限（1食あたり±4g）を
-超える補正はしない。上限に達したら学習を止め、レシピ自体の見直しが要るかもしれないと伝える。
+## When the numbers don't add up
 
-理論値が在庫を割ってマイナスになっても、0 には丸めないしエラーでも止めない。マイナスは
-「理論値が実測より多く見積もっていた」という情報で、丸めると係数を直す材料そのものが消える。
-営業中に売上が打てなくなるほうが困る。数字は表示せず「実測が必要です」とだけ言う。
+Coefficient learning is itself an attack surface. Under-report a stock count
+and the coefficient rises — from then on that much consumption looks
+"normal" and disappears. So corrections beyond the physical limit of
+portioning variance (±4g per serving — about 0.14oz; the cap is defined in
+grams and converted to whichever measurement system the shop chose at
+onboarding, metric or imperial) are refused. At the cap, learning
+stops and teruo says the recipe itself may need a review.
 
-そして**誰が入力したかは記録しない。** 打った数字が自分の負担になると分かれば正直に
-打たなくなり、係数はでたらめを学習して teruo が使えなくなる。倫理の問題であると同時に、
-システムが機能するための条件でもある。
+When the book value dips below zero, it is neither clamped to 0 nor treated
+as an error. A negative number is information — "the estimate ran ahead of
+reality" — and rounding it away destroys the very material that corrects the
+coefficient. What would actually hurt is being unable to enter sales
+mid-service. The number is never displayed; teruo only says a recount is
+needed.
 
-単発では閾値の内側に収まる差も、月単位の積算なら見える（2g/食 × 100食 × 25日 = 5kg）。
-`get_monthly_reconciliation` が仕入れ・レシピ理論消費・棚卸し実測を突き合わせる。
-ただし teruo は原因を分けられない。記録漏れも廃棄も抜き取りも同じ「理論値より少ない」として
-現れる。だから犯人を指さず、事実と幅の異常だけを言う。
+And **who entered a number is never recorded.** The moment an entry can be
+held against you, people stop entering honestly, the coefficient learns
+nonsense, and teruo stops working. It's an ethical stance and a functional
+requirement at the same time.
 
-## 必要な環境変数
+Gaps that stay inside the daily threshold still show up when accumulated
+over a month (2g/serving × 100 servings × 25 days = 5kg).
+`get_monthly_reconciliation` cross-checks purchases, recipe-basis
+consumption, and physical counts. But teruo cannot tell causes apart —
+missed records, waste, and shrinkage all surface as the same "less than the
+books say". So it never points at a culprit; it states the facts and the
+out-of-band gap, nothing more.
 
-Replit Secretsへ次を登録してください。値をコードや`.env`へ書かないでください。
+## Required environment variables
+
+Register these as Replit Secrets. Never put the values in code or a `.env`.
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `AWS_DEFAULT_REGION`（`us-east-2`）
+- `AWS_DEFAULT_REGION` (`us-east-2`)
 
-## 起動
+## Running
 
 ```bash
 python main.py
 ```
 
-- 品目・商品が未登録（空の `data/state.json`）の場合は初回カウンセリングが始まります
-- `python main.py --setup` でカウンセリングを強制的にやり直せます
-- 終了するには `exit` または `quit` と入力します
+- With no items and no products registered (an empty `data/state.json`),
+  the onboarding interview starts
+- `python main.py --setup` forces the onboarding interview to run again
+- Type `exit` or `quit` to leave
 
-## ファイル
+## Files
 
-- `main.py`: 対話ループ（通常モード / カウンセリングモード）
-- `agents.py`: 判断層のエージェント3役（報告係・記録係・観測係）
-- `tools.py`: 計算ツール群（記録・登録・照会）
-- `store.py`: `data/state.json`の読み書き（アトミック書き込み・同時書き込み検知）
-- `data/state.json`: 在庫、レシピ、履歴、設定
-- `tests/simulate_convergence.py`: 係数収束の検証シミュレーション
+- `main.py`: the interactive loop (operations mode / onboarding mode)
+- `agents.py`: the judgment layer's three agents (reporter, record keeper, observer)
+- `tools.py`: the calculation tools (recording, registration, queries)
+- `store.py`: reads/writes `data/state.json` (atomic writes, concurrent-write detection)
+- `data/state.json`: stock, recipes, history, settings
+- `tests/simulate_convergence.py`: the coefficient convergence simulation
 
-## アーキテクチャ
+## Architecture
 
-![teruo アーキテクチャ図](docs/architecture.svg)
+![teruo architecture](docs/architecture.svg)
 
-計算(在庫減算・係数学習)はすべて Python ツール側で行い、AI は判断だけを担います。
-判断層は設計書にある3つの判断に沿って3エージェントに分かれています
-(Strands の agents-as-tools 構成):
+All calculation (stock reduction, coefficient learning) happens in Python
+tools; the AI handles judgment only. The judgment layer follows the design
+doc's three judgments, split into three agents (Strands' agents-as-tools
+pattern):
 
-- **報告係（窓口）**: いつ何を言うか決める。営業中は黙る。構造変更(合言葉)は店主と直接
-- **記録係**: 売上・棚卸し・仕入れを受けて Python ツールで記録する。判断しない
-- **観測係**: 異常を見つけ、今日数えてもらう品目を2〜3つに絞る
+- **Reporter (front desk)**: decides when to say what. Stays quiet during
+  service. Structure changes (passphrase) go through it directly with the owner
+- **Record keeper**: takes sales, stock counts, and purchases and records
+  them via Python tools. Makes no judgments
+- **Observer**: spots anomalies and narrows today's stock-count request to
+  2-3 items
 
-## 係数は本当に収束するのか
+## Does the coefficient actually converge?
 
-中核の主張「手の誤差を学習する」を、真の係数を決めた20営業日分の
-機械生成データで検証しています(`python tests/simulate_convergence.py`)。
+The core claim — "it learns the hand's error" — is verified with machine-
+generated data over 20 business days against a known true coefficient
+(`python tests/simulate_convergence.py`).
 
-![係数の収束グラフ](tests/convergence.png)
+![coefficient convergence chart](tests/convergence.png)
 
-- 盛りブレが上限(レシピ±4g/食)の内側なら、棚卸し3〜5回で真の値に収束する
-  (5回目以降の平均は真の値との差0.6%)
-- 上限を超えるブレは上限で学習が止まり、レシピ見直しの警告になる(原則12)
-- 1食1枚の紙類(count型)の係数は 1.0 から動かない
-- 実測1回を全量採用すると日々のブレ(±5%)を追いかけて振動したため、
-  更新式は実測へ半分ずつ寄せる平滑化を入れている(検証で判明し、設計書に反映)
+- With portioning drift inside the cap (recipe ±4g/serving), the
+  coefficient converges to the true value within 3-5 stock counts
+  (the mean from count 5 on is 0.6% off the true value)
+- Drift beyond the cap stops at the cap and becomes a recipe-review warning
+  (principle 12)
+- One-sheet-per-serving paper goods (`count` type) never move from 1.0
+- Adopting a single count in full chased daily variance (±5%) and
+  oscillated, so the update rule moves halfway toward the measured value
+  (found in verification, folded back into the design doc)
 
-## 設計指針
+## Design principles
 
-正本は `docs/teruo-design.md`（設計書B）。
+The authoritative source is `docs/teruo-design.md` (design doc B).
 
-- 計算は Python、判断は AI。数値をモデルに暗算させない
-- 理論値は仮置き、実測（棚卸し・使い切り）で直す
-- 係数には物理的な上限を置く。日々の入力がレシピを実質的に書き換える迂回路を塞ぐ
-- 構造変更（レシピ・単位・品目構成）は合言葉を要求し、変更前後の値を履歴に残す
-- 消さない。品目は `active: false` で隠すだけ、履歴は追記のみ
+- Python calculates, AI judges. Never let the model do mental math
+- Book values are placeholders; real measurements (stock counts, emptied
+  units) correct them
+- The coefficient has a physical cap — closing the loophole where daily
+  entries quietly rewrite the recipe
+- Structure changes (recipes, units, item registry) require a passphrase and
+  log before/after values
+- Nothing is deleted. Items are hidden with `active: false`; history is
+  append-only
 
-## ライセンス
+## License
 
-MIT License（`LICENSE` を参照）。
-[Strands Agents SDK](https://github.com/strands-agents/sdk-python)（Apache 2.0）を使用しています。
+MIT License (see `LICENSE`).
+Uses the [Strands Agents SDK](https://github.com/strands-agents/sdk-python) (Apache 2.0).

@@ -2,7 +2,7 @@
   "products": [
     {
       "id": "kebab_sand",
-      "name": "ケバブサンド",
+      "name": "Kebab sandwich",
       "price": 600,
       "recipe": [
         {
@@ -29,7 +29,7 @@
     },
     {
       "id": "kebab_wrap",
-      "name": "ケバブラップ",
+      "name": "Kebab wrap",
       "price": 600,
       "recipe": [
         {
@@ -56,7 +56,7 @@
     },
     {
       "id": "rice_box",
-      "name": "ライスボックス",
+      "name": "Rice box",
       "price": 700,
       "recipe": [
         {
@@ -83,7 +83,7 @@
     },
     {
       "id": "kebab_mix",
-      "name": "おつまみケバブミックス",
+      "name": "Snack kebab mix",
       "price": 500,
       "recipe": [
         {
@@ -106,7 +106,7 @@
     },
     {
       "id": "meat_only",
-      "name": "ケバブミートのみ",
+      "name": "Kebab meat only",
       "price": 500,
       "recipe": [
         {
@@ -123,12 +123,12 @@
   "items": [
     {
       "id": "meat_chicken",
-      "name": "ケバブ肉（チキン）",
+      "name": "Kebab meat (chicken)",
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
       "consumption_type": "weight",
-      "purchase_unit": "本",
+      "purchase_unit": "cone",
       "unit_weight": 10000,
       "stock": 8500,
       "coefficient": 1.0,
@@ -138,12 +138,12 @@
     },
     {
       "id": "meat_beef",
-      "name": "ケバブ肉（ビーフ）",
+      "name": "Kebab meat (beef)",
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
       "consumption_type": "weight",
-      "purchase_unit": "本",
+      "purchase_unit": "cone",
       "unit_weight": 10000,
       "stock": 6200,
       "coefficient": 1.0,
@@ -153,9 +153,9 @@
     },
     {
       "id": "pita",
-      "name": "ピタパン",
+      "name": "Pita bread",
       "tier": 1,
-      "unit": "枚",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 200,
@@ -166,9 +166,9 @@
     },
     {
       "id": "tortilla",
-      "name": "トルティーヤ",
+      "name": "Tortilla",
       "tier": 1,
-      "unit": "枚",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 150,
@@ -179,7 +179,7 @@
     },
     {
       "id": "rice",
-      "name": "ライス",
+      "name": "Rice",
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
@@ -192,9 +192,9 @@
     },
     {
       "id": "sauce_yogurt",
-      "name": "ソース（ヨーグルト）",
+      "name": "Yogurt sauce",
       "tier": 2,
-      "unit": "本",
+      "unit": "bottle",
       "unit_type": "count",
       "consumption_type": "unit",
       "stock": 4,
@@ -208,9 +208,9 @@
     },
     {
       "id": "wrap_paper",
-      "name": "ラップ紙",
+      "name": "Wrap paper",
       "tier": 1,
-      "unit": "枚",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 500,
@@ -221,9 +221,9 @@
     },
     {
       "id": "napkin",
-      "name": "ナプキン",
+      "name": "Napkin",
       "tier": 1,
-      "unit": "枚",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 1000,
@@ -234,9 +234,9 @@
     },
     {
       "id": "container",
-      "name": "容器",
+      "name": "Container",
       "tier": 1,
-      "unit": "個",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 300,
@@ -247,9 +247,9 @@
     },
     {
       "id": "spoon",
-      "name": "スプーン",
+      "name": "Spoon",
       "tier": 1,
-      "unit": "本",
+      "unit": "pc",
       "unit_type": "count",
       "consumption_type": "count",
       "stock": 300,

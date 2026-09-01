@@ -1,19 +1,23 @@
-"""デモ用シードデータ生成 — 先月1ヶ月分の整合した営業記録を作る。
+"""Demo seed data generator — builds one consistent month of trading records.
 
-実ツール（tools.py）をそのまま呼んで記録するため、生成された state は
-本番の係数ロジック・履歴形式と完全に整合する。乱数は固定シードで再現可能。
+It calls the real tools (tools.py) to record everything, so the generated
+state matches the production coefficient logic and history format exactly.
+The RNG is seeded, so runs are reproducible.
 
-埋め込んである異常（チキン）:
-- 盛りブレ +3%（1食あたり約2g強。係数の上限±4g/食の内側 → 日次では正常）
-- 未記録消費（記録されなかった廃棄・まかない等） 1.5kg × 4回（棚卸しのたびに係数が上限警告を出す）
-→ 月次突合では「盛り付けで説明できる幅」を超えた差として現れる
+Embedded anomalies (chicken):
+- Portioning drift +3% (a bit over 2g/serving — inside the ±4g/serving cap,
+  so daily numbers look normal)
+- Unrecorded consumption (waste, staff meals, ... that never got logged):
+  1.5kg × 4 times (each stock count makes the coefficient hit its cap warning)
+→ The monthly reconciliation surfaces it as a gap larger than portioning
+  variance can explain.
 
-出力: data/state.demo-month.json（既存の data/state.json には触らない）
+Output: data/state.demo-month.json (the existing data/state.json is untouched)
 
-使い方:
+Usage:
     python scripts/seed_demo.py
     INVENTORY_STATE_PATH=data/state.demo-month.json python main.py
-    > 8月の突合をして        # 生成対象は実行日の「先月」
+    > reconcile last month        # the generated month is last month
 """
 
 from __future__ import annotations
@@ -33,14 +37,14 @@ shutil.copy(REPO_ROOT / "data" / "state.json", OUT_PATH)
 os.environ["INVENTORY_STATE_PATH"] = str(OUT_PATH)
 sys.path.insert(0, str(REPO_ROOT))
 
-import tools  # noqa: E402  （INVENTORY_STATE_PATH を設定してから import する）
+import tools  # noqa: E402  (import after setting INVENTORY_STATE_PATH)
 
-tools.DIRECT_OUTPUT = False  # シード生成中はツールに印字させない
+tools.DIRECT_OUTPUT = False  # keep the tools quiet while seeding
 
 TZ = ZoneInfo("Asia/Tokyo")
 rng = random.Random(42)
 
-# --- シミュレーション時計。tools 側の「今」を差し替える ---
+# --- Simulation clock. Replaces "now" inside tools ---
 _sim_now = datetime.now(TZ)
 
 
@@ -57,7 +61,7 @@ def at(day: date, hour: int, minute: int) -> None:
 
 
 def call(tool_obj, *args, **kwargs):
-    """strands の @tool ラッパー越しに元関数を呼ぶ。"""
+    """Call the underlying function through the strands @tool wrapper."""
     fn = getattr(tool_obj, "_tool_func", None) or getattr(
         tool_obj, "original_function", None
     )
@@ -66,7 +70,7 @@ def call(tool_obj, *args, **kwargs):
     return fn(*args, **kwargs)
 
 
-# --- 対象月 = 実行日の先月 ---
+# --- Target month = the month before the run date ---
 today = date.today()
 month_last = today.replace(day=1) - timedelta(days=1)
 month_first = month_last.replace(day=1)
@@ -75,10 +79,10 @@ MONTH = month_first.strftime("%Y-%m")
 business_days = [
     month_first + timedelta(days=i)
     for i in range((month_last - month_first).days + 1)
-    if (month_first + timedelta(days=i)).weekday() != 0  # 月曜定休
+    if (month_first + timedelta(days=i)).weekday() != 0  # closed Mondays
 ]
 
-# --- 真の在庫（teruo からは見えない現実）---
+# --- True stock (the reality teruo cannot see) ---
 true_stock = {
     "meat_chicken": 8500.0,
     "meat_beef": 6200.0,
@@ -90,7 +94,8 @@ true_stock = {
     "container": 300.0,
     "spoon": 300.0,
 }
-# 盛りブレ（レシピに対する実際の手の倍率）。上限±4g/食の内側
+# Portioning drift (the hand's real multiplier vs. the recipe).
+# Inside the ±4g/serving cap.
 POUR_FACTOR = {"meat_chicken": 1.03, "meat_beef": 1.03, "rice": 1.01}
 
 RECIPES = {
@@ -100,16 +105,17 @@ RECIPES = {
     "kebab_mix": {"meat_beef": 60, "meat_chicken": 60, "container": 1, "napkin": 1},
     "meat_only": {"meat_chicken": 120, "container": 1},
 }
-SAUCE_PRODUCTS = ("kebab_sand", "kebab_wrap")  # ソースを1食分使う商品
+SAUCE_PRODUCTS = ("kebab_sand", "kebab_wrap")  # products using one serving of sauce
 
-# 未記録消費（チキン。記録されなかった廃棄・まかない等）。月内に4回、1.5kgずつ
+# Unrecorded chicken consumption (waste, staff meals, ... never logged).
+# Four times during the month, 1.5kg each.
 unrecorded_days = {business_days[i] for i in (5, 11, 17, 23)}
 UNRECORDED_G = 1500.0
-# ピタの紛失（数え物のわずかな差のデモ）
+# Lost pita (demo of a small gap in a count-tracked item)
 pita_loss_days = {business_days[8], business_days[19]}
 
-# --- ソースのボトル（真の姿）---
-sauce_bottles = 4          # 開封中を含む本数
+# --- Sauce bottles (the true picture) ---
+sauce_bottles = 4          # bottle count, including the open one
 sauce_capacity = rng.randint(48, 52)
 sauce_used_in_open = 0
 
@@ -160,7 +166,7 @@ def restock(day: date) -> None:
 
 def take_count(item_id: str) -> None:
     result = call(tools.record_count, item_id, round(true_stock[item_id], 1))
-    if "上限に達しています" in result:
+    if "hit the cap" in result:
         count_warnings.append(f"{_sim_now.date()} {result.splitlines()[0]}")
 
 
@@ -190,47 +196,47 @@ def daily_sales(day: date) -> None:
                 maybe_empty_sauce()
 
 
-# ============================== シミュレーション ==============================
+# ============================== Simulation ==============================
 
 first_day, last_day = business_days[0], business_days[-1]
 
-# 月初: 全品目の棚卸し（基準線）と、ソースの開封起点
+# Start of month: count every item (the baseline) and mark the open sauce bottle
 at(first_day, 9, 0)
 for item_id in true_stock:
     take_count(item_id)
 at(first_day, 9, 10)
-call(tools.record_unit_used, "sauce_yogurt")  # 開封中ボトルの起点だけ記録
+call(tools.record_unit_used, "sauce_yogurt")  # record only the opening point
 
-chicken_count_days = set(business_days[6::6])  # 週1ペース
+chicken_count_days = set(business_days[6::6])  # roughly weekly
 
 for day in business_days:
     restock(day)
     daily_sales(day)
     if day in unrecorded_days:
         at(day, 22, 0)
-        true_stock["meat_chicken"] -= UNRECORDED_G   # 記録されなかった消費
+        true_stock["meat_chicken"] -= UNRECORDED_G   # consumption never logged
     if day in pita_loss_days:
-        true_stock["pita"] -= 1                  # 記録されない紛失
+        true_stock["pita"] -= 1                  # loss never logged
     if day in chicken_count_days and day != last_day:
         at(day, 21, 30)
         take_count("meat_chicken")
 
-# 月末: 全品目の棚卸し（突合のもう片方の錨）
+# End of month: count every item (the reconciliation's other anchor)
 at(last_day, 21, 30)
 for item_id in true_stock:
     take_count(item_id)
 
-# ============================== 検証出力 ==============================
+# ============================== Verification output ==============================
 
-print(f"生成しました: {OUT_PATH}（対象月 {MONTH}、営業{len(business_days)}日）")
+print(f"Generated: {OUT_PATH} (target month {MONTH}, {len(business_days)} business days)")
 print()
-print("埋め込んだ異常:")
-print(f"- チキン 盛りブレ +3% と、未記録消費 {UNRECORDED_G:.0f}g × {len(unrecorded_days)}回")
-print(f"- ピタ 紛失 {len(pita_loss_days)}枚")
+print("Embedded anomalies:")
+print(f"- Chicken: +3% portioning drift, plus {UNRECORDED_G:.0f}g unrecorded consumption × {len(unrecorded_days)}")
+print(f"- Pita: {len(pita_loss_days)} sheets lost")
 print()
-print(f"月中の棚卸しで出た上限警告: {len(count_warnings)}回")
+print(f"Cap warnings raised by mid-month stock counts: {len(count_warnings)}")
 for line in count_warnings:
     print(f"  {line}")
 print()
-print("=== get_monthly_reconciliation の出力（動画でこのまま映る内容）===")
+print("=== get_monthly_reconciliation output (exactly what the video will show) ===")
 print(call(tools.get_monthly_reconciliation, MONTH))

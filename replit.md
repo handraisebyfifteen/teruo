@@ -1,15 +1,18 @@
-# teruo — キッチンカー在庫エージェント
+# teruo — food-truck inventory agent
 
-ケバブ屋台の売上と棚卸しから在庫と消費係数を管理するPython CLI。
-係数ロジックは消費型3分類（count / weight / unit）の3系統。
-名前は英語の tell から（表記は常に小文字 `teruo`）。
+A Python CLI that manages stock and consumption coefficients from a kebab
+stall's sales and stock counts. Coefficient logic branches three ways by
+consumption type (count / weight / unit).
+The name comes from the English "tell" (always written lowercase `teruo`).
+The entire product (UI, prompts, docs) is in English; README.ja.md keeps
+the Japanese README.
 
 ## Run & Operate
 
-- `python main.py` — 対話型CLIを起動（状態が空なら初回カウンセリング）
-- `python main.py --setup` — カウンセリングを強制起動
+- `python main.py` — start the interactive CLI (onboarding runs if state is empty)
+- `python main.py --setup` — force the onboarding interview
 - Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
-  `AWS_DEFAULT_REGION`（`us-east-2`）
+  `AWS_DEFAULT_REGION` (`us-east-2`)
 
 ## Stack
 
@@ -21,12 +24,12 @@
 ## Where things live
 
 - CLI loop and counseling agent: `main.py`
-- Operations agents (報告係・記録係・観測係, agents-as-tools): `agents.py`
+- Operations agents (reporter / record keeper / observer, agents-as-tools): `agents.py`
 - Tool calculations: `tools.py`
 - Atomic JSON persistence: `store.py`
 - State: `data/state.json`
 - Convergence simulation: `tests/simulate_convergence.py`
-- Scope: `docs/teruo-design.md`（設計書B・正本）, `docs/teruo-instructions.md`（実装指示書）
+- Scope: `docs/teruo-design.md` (design doc B, authoritative), `docs/teruo-instructions.md` (implementation instructions; both in Japanese)
 
 ## Architecture decisions
 
@@ -46,7 +49,7 @@
   `unit` (servings-per-unit learned only from used-up events, bounded to ±20%
   of past results once 3 samples exist).
 - Negative theoretical stock is kept internally (never clamped to 0, never an
-  error); displays say 実測が必要です instead of showing a negative number.
+  error); displays say "recount needed" instead of showing a negative number.
 - Who entered a number is never recorded, only when (design doc principle 10).
 - get_monthly_reconciliation cross-checks purchases vs recipe-based consumption
   vs counted stock per month (design doc principle 12).

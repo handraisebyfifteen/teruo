@@ -1,22 +1,26 @@
-"""係数収束シミュレーション — 「手の誤差を学習する」が本当かを実データ生成で検証する。
+"""Coefficient convergence simulation — checks whether "learning the hand's
+error" actually holds, using generated data.
 
-teruo の中核の主張: レシピと実際の盛り付けの差（係数）を棚卸しから学習する。
-これを検証するため、「真の係数」を決めて売上と棚卸しを機械的に生成し、
-実ツール（record_sales / record_count）にそのまま食わせて、
-係数が 1.0 から真の値に近づくかを見る。
+teruo's core claim: the gap between the recipe and actual portioning (the
+coefficient) is learned from stock counts. To verify it, we fix a "true
+coefficient", mechanically generate sales and stock counts, feed them to the
+real tools (record_sales / record_count), and watch whether the coefficient
+moves from 1.0 toward the true value.
 
-シナリオは2つ:
-  A) 盛りブレが上限（レシピ±4g/食）の内側 → 真の値に収束するはず
-  B) 盛りブレが上限を超える           → 上限で止まり、警告が出るはず（原則12）
+Two scenarios:
+  A) Portioning drift inside the cap (recipe ±4g/serving) → should converge
+     to the true value
+  B) Portioning drift beyond the cap → should stop at the cap and warn
+     (principle 12)
 
-本体のコードは変更しない。state は tests/sim_state.json を使い、
-本番の data/state.json には触らない。
+No production code is changed. State goes to tests/sim_state.json; the real
+data/state.json is untouched.
 
-出力:
-  tests/convergence.csv   — 棚卸し回ごとの係数（両シナリオ）
-  tests/convergence.png   — 収束グラフ
+Output:
+  tests/convergence.csv   — coefficient per stock count (both scenarios)
+  tests/convergence.png   — convergence chart
 
-使い方:
+Usage:
     python tests/simulate_convergence.py
 """
 
@@ -40,14 +44,14 @@ PNG_PATH = REPO_ROOT / "tests" / "convergence.png"
 os.environ["INVENTORY_STATE_PATH"] = str(SIM_STATE)
 sys.path.insert(0, str(REPO_ROOT))
 
-import store  # noqa: E402  （INVENTORY_STATE_PATH を設定してから import する）
+import store  # noqa: E402  (import after setting INVENTORY_STATE_PATH)
 import tools  # noqa: E402
 
-tools.DIRECT_OUTPUT = False  # シミュレーション中はツールに印字させない
+tools.DIRECT_OUTPUT = False  # keep the tools quiet during the simulation
 
 TZ = ZoneInfo("Asia/Tokyo")
 
-# --- シミュレーション時計。tools 側の「今」を差し替える ---
+# --- Simulation clock. Replaces "now" inside tools ---
 _sim_now = datetime.now(TZ)
 
 
@@ -64,7 +68,7 @@ def at(day: date, hour: int, minute: int) -> None:
 
 
 def call(tool_obj, *args, **kwargs):
-    """strands の @tool ラッパー越しに元関数を呼ぶ。"""
+    """Call the underlying function through the strands @tool wrapper."""
     fn = getattr(tool_obj, "_tool_func", None) or getattr(
         tool_obj, "original_function", None
     )
@@ -81,16 +85,17 @@ RECIPES = {
     "meat_only": {"meat_chicken": 120, "container": 1},
 }
 
-DAYS = 20          # 営業日数 = 棚卸し回数
-NOISE = 0.05       # 日ごとの手のばらつき ±5%（現場では毎日ぴったり同じにはならない）
+DAYS = 20          # business days = number of stock counts
+NOISE = 0.05       # daily hand variance ±5% (no hand is identical every day)
 
 
 def run_scenario(true_coefficient: float, seed: int) -> dict:
-    """真の係数を固定して20営業日を回し、棚卸しごとの係数の推移を返す。"""
+    """Fix the true coefficient, run 20 business days, return the
+    coefficient's path across stock counts."""
     shutil.copy(REPO_ROOT / "data" / "state.json", SIM_STATE)
     rng = random.Random(seed)
 
-    # teruo からは見えない現実の在庫
+    # The real stock teruo cannot see
     true_stock = {"meat_chicken": 8500.0, "wrap_paper": 500.0}
 
     coefficients: list[float] = []
@@ -99,7 +104,7 @@ def run_scenario(true_coefficient: float, seed: int) -> dict:
 
     day = date(2026, 8, 1)
     for _ in range(DAYS):
-        # --- 営業: 1日30〜60食をランダムに商品へ配分 ---
+        # --- Trading: 30-60 servings per day, split randomly across products ---
         at(day, 12, 0)
         servings = rng.randint(30, 60)
         noise = 1.0 + rng.uniform(-NOISE, NOISE)
@@ -122,7 +127,7 @@ def run_scenario(true_coefficient: float, seed: int) -> dict:
             )
             true_stock["wrap_paper"] -= quantity * recipe.get("wrap_paper", 0)
 
-        # --- 仕入れ: 実測グラム付きで入れる（残りが1日分を切る前に） ---
+        # --- Purchases: with measured grams (before less than a day remains) ---
         if true_stock["meat_chicken"] < 5000:
             at(day, 17, 0)
             amount = float(rng.randint(9700, 10300))
@@ -132,10 +137,10 @@ def run_scenario(true_coefficient: float, seed: int) -> dict:
             )
             true_stock["meat_chicken"] += amount
 
-        # --- 締め: 棚卸し（チキンは毎日、紙は5日ごと） ---
+        # --- Closing: stock counts (chicken daily, paper every 5 days) ---
         at(day, 21, 0)
         result = call(tools.record_count, "meat_chicken", round(true_stock["meat_chicken"]))
-        if "上限に達しています" in result:
+        if "hit the cap" in result:
             cap_hits += 1
         state = store.load_state()
         chicken = next(i for i in state["items"] if i["id"] == "meat_chicken")
@@ -158,8 +163,8 @@ def run_scenario(true_coefficient: float, seed: int) -> dict:
 
 
 def main() -> None:
-    scenario_a = run_scenario(true_coefficient=1.04, seed=7)   # 上限の内側
-    scenario_b = run_scenario(true_coefficient=1.15, seed=7)   # 上限超え
+    scenario_a = run_scenario(true_coefficient=1.04, seed=7)   # inside the cap
+    scenario_b = run_scenario(true_coefficient=1.15, seed=7)   # beyond the cap
 
     with CSV_PATH.open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
@@ -206,36 +211,36 @@ def main() -> None:
     figure.tight_layout()
     figure.savefig(PNG_PATH, dpi=150)
 
-    # --- 判定 ---
+    # --- Verdict ---
     tail_a = scenario_a["coefficients"][4:]
     mean_a = statistics.fmean(tail_a)
     swing_a = max(
         abs(x - y) for x, y in zip(scenario_a["coefficients"][5:], scenario_a["coefficients"][4:])
     )
-    print(f"シナリオA（真の係数 {scenario_a['true']}）")
-    print(f"  係数の推移: {[round(c, 3) for c in scenario_a['coefficients']]}")
-    print(f"  5回目以降の平均: {mean_a:.3f}（真の値との差 {abs(mean_a - scenario_a['true']) / scenario_a['true'] * 100:.1f}%）")
-    print(f"  5回目以降の最大振れ幅: {swing_a:.3f}")
-    print(f"  ラップ紙（count型）の係数: {scenario_a['paper_coefficients']}（1.0のままであること）")
-    print(f"シナリオB（真の係数 {scenario_b['true']} — 上限超え）")
-    print(f"  係数の推移: {[round(c, 3) for c in scenario_b['coefficients']]}")
-    print(f"  上限警告の回数: {scenario_b['cap_hits']} / {DAYS}")
-    print(f"出力: {CSV_PATH.relative_to(REPO_ROOT)}, {PNG_PATH.relative_to(REPO_ROOT)}")
+    print(f"Scenario A (true coefficient {scenario_a['true']})")
+    print(f"  Coefficient path: {[round(c, 3) for c in scenario_a['coefficients']]}")
+    print(f"  Mean from count 5 on: {mean_a:.3f} (off the true value by {abs(mean_a - scenario_a['true']) / scenario_a['true'] * 100:.1f}%)")
+    print(f"  Max swing from count 5 on: {swing_a:.3f}")
+    print(f"  Wrap paper (count type) coefficients: {scenario_a['paper_coefficients']} (must stay 1.0)")
+    print(f"Scenario B (true coefficient {scenario_b['true']} — beyond the cap)")
+    print(f"  Coefficient path: {[round(c, 3) for c in scenario_b['coefficients']]}")
+    print(f"  Cap warnings: {scenario_b['cap_hits']} / {DAYS}")
+    print(f"Output: {CSV_PATH.relative_to(REPO_ROOT)}, {PNG_PATH.relative_to(REPO_ROOT)}")
 
     ok = True
     if abs(mean_a - scenario_a["true"]) / scenario_a["true"] > 0.02:
         ok = False
-        print("NG: シナリオAが真の係数に収束していません")
+        print("FAIL: scenario A did not converge to the true coefficient")
     if swing_a > 0.04:
         ok = False
-        print("NG: 係数が振動し続けています（平滑化を見直すこと）")
+        print("FAIL: the coefficient keeps oscillating (revisit the smoothing)")
     if any(c != 1.0 for c in scenario_a["paper_coefficients"]):
         ok = False
-        print("NG: count型（ラップ紙）の係数が動いています")
+        print("FAIL: a count-type coefficient (wrap paper) moved")
     if scenario_b["cap_hits"] == 0:
         ok = False
-        print("NG: シナリオBで上限警告が出ていません")
-    print("判定: " + ("OK — 係数は真の値に収束し、上限も機能しています" if ok else "NG"))
+        print("FAIL: scenario B never raised a cap warning")
+    print("Verdict: " + ("OK — the coefficient converges to the true value and the cap works" if ok else "FAIL"))
     raise SystemExit(0 if ok else 1)
 
 
