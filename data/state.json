@@ -14,6 +14,10 @@
           "qty": 1
         },
         {
+          "item_id": "sauce_yogurt",
+          "qty": 1
+        },
+        {
           "item_id": "wrap_paper",
           "qty": 1
         },
@@ -34,6 +38,10 @@
         },
         {
           "item_id": "tortilla",
+          "qty": 1
+        },
+        {
+          "item_id": "sauce_yogurt",
           "qty": 1
         },
         {
@@ -119,6 +127,7 @@
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
+      "consumption_type": "weight",
       "purchase_unit": "本",
       "unit_weight": 10000,
       "stock": 8500,
@@ -133,6 +142,7 @@
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
+      "consumption_type": "weight",
       "purchase_unit": "本",
       "unit_weight": 10000,
       "stock": 6200,
@@ -147,6 +157,7 @@
       "tier": 1,
       "unit": "枚",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 200,
       "coefficient": 1.0,
       "last_counted": null,
@@ -159,6 +170,7 @@
       "tier": 1,
       "unit": "枚",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 150,
       "coefficient": 1.0,
       "last_counted": null,
@@ -171,8 +183,25 @@
       "tier": 1,
       "unit": "g",
       "unit_type": "weight",
+      "consumption_type": "weight",
       "stock": 8000,
       "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "sauce_yogurt",
+      "name": "ソース（ヨーグルト）",
+      "tier": 2,
+      "unit": "本",
+      "unit_type": "count",
+      "consumption_type": "unit",
+      "stock": 4,
+      "coefficient": null,
+      "sales_count": 0,
+      "opened_at_sales_count": null,
+      "unit_history": [],
       "last_counted": null,
       "count_history": [],
       "active": true
@@ -183,6 +212,7 @@
       "tier": 1,
       "unit": "枚",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 500,
       "coefficient": 1.0,
       "last_counted": null,
@@ -195,6 +225,7 @@
       "tier": 1,
       "unit": "枚",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 1000,
       "coefficient": 1.0,
       "last_counted": null,
@@ -207,6 +238,7 @@
       "tier": 1,
       "unit": "個",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 300,
       "coefficient": 1.0,
       "last_counted": null,
@@ -219,6 +251,7 @@
       "tier": 1,
       "unit": "本",
       "unit_type": "count",
+      "consumption_type": "count",
       "stock": 300,
       "coefficient": 1.0,
       "last_counted": null,

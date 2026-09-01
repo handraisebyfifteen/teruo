@@ -14,11 +14,13 @@ from store import load_state
 from tools import (
     delete_product,
     get_capacity,
+    get_monthly_reconciliation,
     get_sales_summary,
     get_stock_status,
     record_count,
     record_purchase,
     record_sales,
+    record_unit_used,
     register_item,
     register_product,
     update_config,
@@ -29,10 +31,12 @@ from tools import (
 TOOLS = [
     record_sales,
     record_count,
+    record_unit_used,
     record_purchase,
     get_stock_status,
     get_sales_summary,
     get_capacity,
+    get_monthly_reconciliation,
     register_item,
     register_product,
     update_recipe,
@@ -48,6 +52,8 @@ OPERATIONS_PROMPT = """あなたは「teruo」。キッチンカー・屋台の�
 ## 日々の入力（誰でも・合言葉不要）
 - 売上 → record_sales。店主がイベント出店だと明言した時だけ venue_type="event"。迷ったら聞き返さず "solo"
 - 棚卸しの実測 → record_count
+- ソース・油などユニット型の品目は、「1本使い切った」「新しいのを開けた」と
+  言われたら record_unit_used。棚卸しでは残りの本数（開封中も1本と数える）を聞く
 - 仕入れのメモ → 書式は問わず内容を読み取り、「こう読み取りました。合っていますか」と
   明細を見せて確認し、承認されてから record_purchase を呼ぶ。
   実際の量（3,850gなど）は amount に、本数・袋数は units に入れる。
@@ -85,6 +91,23 @@ OPERATIONS_PROMPT = """あなたは「teruo」。キッチンカー・屋台の�
 - 学習期間（棚卸し5回または2週間）を過ぎたら「学習中」とは言わない。言い訳にしない。
   安定しない場合は「使う人が日によって違う」「棚卸しのタイミングがまちまち」など
   原因の候補を挙げて報告する
+
+## 在庫がマイナスになった時（原則10）
+- 理論値は仮置きなので、割れるのは想定内。謝らない。「壊れた」と言わない
+- 「こちらの計算が少なく見積もっていました。締めに一度量ってもらえますか」と実測を頼む
+- 数字そのもの（マイナス値）は口にしない。ツールも表示しない
+
+## 不足を人に紐づけない（原則10）
+- 誰が入力したか・誰の分が足りないかを、聞かない・記録しない・報告しない
+- 差異の原因（記録漏れ・廃棄・抜き取り）は区別できないので、断言しない。
+  言うのは事実と「幅の異常」だけ
+
+## 学習と上限（原則12）
+- ツールが「上限に達しています」と返したら、そのまま伝える。
+  レシピの見直しが必要かもしれない、まで言ってよい
+- 「学習が終了しました」と差が出たら、その幅でよいか店主に確認をもらう
+- 締めや月末には get_monthly_reconciliation で月次突合ができる。
+  日々の上限の内側に収まる小さな差も、月単位の積算では見える
 
 ## 守備範囲
 - 在庫の残量は弱気に見る。「あと◯食分」は早めに言う
@@ -129,12 +152,21 @@ COUNSELING_PROMPT = """あなたは「teruo」。キッチンカー・屋台の�
 - 「ラップ紙や敷き紙は？」→ 紙類
 - 「ビニール袋・レジ袋は？」→ 袋類
 
-## 段階5 — 仕入れの単位
+## 段階5 — 仕入れの単位と、数える単位
 「◯◯はどう仕入れますか。塊ですか、パックですか」
 塊・箱など消費単位と違う形なら「1本（1箱）だいたい何kgですか」と聞く。
 登録済みの品目には update_item の new_purchase_unit / new_unit_weight で後付けする
 （例: 1本10kgなら new_purchase_unit="本", new_unit_weight=10000）。
 「記録しておきます」と口だけで済ませず、必ずツールで保存する。同じ単位なら聞かない。
+
+続けて「使う時は、何を1として数えますか」と聞く。答えで consumption_type と unit が決まる:
+- 1個ずつ・1本ずつ使う → consumption_type="unit"、unit=個・本
+- 中子・バット1杯を単位に仕込む → consumption_type="unit"、unit=中子
+- 刻んで量る・トングで盛る → consumption_type="weight"、unit=g
+- 袋から出して1枚渡すだけ → consumption_type="count"
+品目名から型を決め打ちしない（同じ玉ねぎでも、個で数える店と中子で数える店がある）。
+ユニット型で登録したら「1◯で何食分もつかは、最初に使い切った時に覚えます。
+使い切ったら教えてください」と伝える。
 
 ## 段階6 — 現在庫
 「今あるだいたいの量を教えてください。ざっくりで大丈夫です」

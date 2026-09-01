@@ -1,6 +1,7 @@
 # teruo — キッチンカー在庫エージェント
 
-ケバブ屋台の売上と棚卸しからTier 1品目の在庫と消費係数を管理するPython CLI。
+ケバブ屋台の売上と棚卸しから在庫と消費係数を管理するPython CLI。
+係数ロジックは消費型3分類（count / weight / unit）の3系統。
 名前は英語の tell から（表記は常に小文字 `teruo`）。
 
 ## Run & Operate
@@ -30,6 +31,15 @@
 - All arithmetic runs in Python tools, never in the model.
 - State writes replace the JSON file atomically to avoid partial-file corruption.
 - The first stock count establishes a baseline and does not alter the coefficient.
+- Consumption logic has three types (design doc ch.2): `count` (fixed 1.0),
+  `weight` (coefficient learned from count diffs, bounded to recipe ±4g/serving),
+  `unit` (servings-per-unit learned only from used-up events, bounded to ±20%
+  of past results once 3 samples exist).
+- Negative theoretical stock is kept internally (never clamped to 0, never an
+  error); displays say 実測が必要です instead of showing a negative number.
+- Who entered a number is never recorded, only when (design doc principle 10).
+- get_monthly_reconciliation cross-checks purchases vs recipe-based consumption
+  vs counted stock per month (design doc principle 12).
 - Structure changes (recipes, units, item registry, config) require the shared
   passphrase stored in `state.json`; daily inputs (sales, counts, purchases) do not.
 - Items are never deleted, only `active: false`. History and settings_log are append-only.

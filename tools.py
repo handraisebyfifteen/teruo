@@ -36,8 +36,11 @@ def _serialized(func):
 TIMEZONE = ZoneInfo("Asia/Tokyo")
 VENUE_TYPES = ("event", "solo")
 UNIT_TYPES = ("weight", "volume", "count")
+# 消費型の3分類（設計書2章）。数え方の軸で、unit_type（単位の種別）とは別。
+CONSUMPTION_TYPES = ("count", "weight", "unit")
 CONFLICT_MESSAGE = "他の方が先に入力したようです。もう一度お願いします"
 PASSPHRASE_MESSAGE = "合言葉が違います。レシピや単位などの設定変更には合言葉が必要です。"
+NEGATIVE_STOCK_DISPLAY = "実測が必要です（理論値が在庫を割りました）"
 
 # 同種別の単位換算表（基準単位あたりの倍率）。別種別への換算はしない。
 WEIGHT_UNITS = {"g": 1.0, "kg": 1000.0}
@@ -50,6 +53,13 @@ ITEM_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 LEARNING_MAX_COUNTS = 5
 LEARNING_MAX_DAYS = 14
 STABLE_COEFFICIENT_BAND = 0.05
+
+# 係数の上限（設計書2章）。盛り方のブレは物理的に1食±3〜4gが限度。
+WEIGHT_BOUND_PER_SERVING = 4.0
+# ユニット型: 過去実績の±20%。実績3回そろうまで上限判定しない。
+UNIT_BOUND_RATIO = 0.2
+UNIT_BOUND_MIN_SAMPLES = 3
+UNIT_LEARNING_SAMPLES = 3
 
 
 def _now() -> datetime:
@@ -82,6 +92,22 @@ def _display_number(value: float) -> str:
 
 def _find(records: list[dict[str, Any]], record_id: str) -> dict[str, Any] | None:
     return next((record for record in records if record["id"] == record_id), None)
+
+
+def _consumption_type(item: dict[str, Any]) -> str:
+    """消費型。未設定の既存データは unit_type から補う（count→count、他→weight）。"""
+    value = item.get("consumption_type")
+    if value in CONSUMPTION_TYPES:
+        return value
+    return "count" if item.get("unit_type") == "count" else "weight"
+
+
+def _display_stock(item: dict[str, Any]) -> str:
+    """在庫の表示。負値は内部に保持したまま、数字を出さない（設計書 原則10）。"""
+    stock = float(item["stock"])
+    if stock < 0:
+        return NEGATIVE_STOCK_DISPLAY
+    return f'{_display_number(stock)}{item["unit"]}'
 
 
 def _check_passphrase(state: dict[str, Any], passphrase: str) -> str | None:
@@ -147,7 +173,18 @@ def _growth_label(item: dict[str, Any]) -> str:
 
     「学習中」は棚卸し5回または14日で必ず打ち切り、以後は言わない。
     安定しない場合は事実（直近の係数変動）を返し、原因の解釈はAIに任せる。
+    ユニット型は使い切り実績の回数で数える（設計書2章）。
     """
+    ctype = _consumption_type(item)
+    if ctype == "count":
+        return "係数固定"
+    if ctype == "unit":
+        n = len(item.get("unit_history", []))
+        if n == 0:
+            return "未学習（最初の使い切り待ち）"
+        if n < UNIT_LEARNING_SAMPLES:
+            return f"学習中（使い切り {n}回 / {UNIT_LEARNING_SAMPLES}回）"
+        return f"安定（実績{n}回）"
     counts = _growth_counts(item)
     n = len(counts)
     if n == 0:
@@ -185,8 +222,11 @@ def _save(state: dict[str, Any]) -> str | None:
 @tool
 @_serialized
 def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> str:
-    """売上を記録し、商品のレシピに従ってTier 1品目の在庫を減らします。
+    """売上を記録し、商品のレシピに従って品目の在庫を減らします。
 
+    消費型ごとに動きが違います（設計書2章）:
+    count型は数どおり、weight型はレシピ×係数で減算。
+    unit型（ソース等）は累計食数だけ数え、在庫は使い切りの記録で動きます。
     売上日時はPython側で自動記録するため、日付の入力は不要です。
 
     Args:
@@ -206,21 +246,48 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
         return f"商品ID「{product_id}」は見つかりません。"
 
     changes: list[str] = []
+    notes: list[str] = []
     for ingredient in product["recipe"]:
         item = _find(state["items"], ingredient["item_id"])
-        if item is None or item.get("tier") != 1 or not item.get("active", True):
+        if item is None or not item.get("active", True):
             continue
+        ctype = _consumption_type(item)
+        qty = float(ingredient["qty"])
+
+        if ctype == "unit":
+            # 途中の残量は測れない。累計食数だけ数える（在庫は record_unit_used が動かす）
+            item["sales_count"] = float(item.get("sales_count", 0)) + quantity * qty
+            coefficient = item.get("coefficient")
+            opened_at = item.get("opened_at_sales_count")
+            if coefficient and opened_at is not None:
+                used = float(item["sales_count"]) - float(opened_at)
+                remaining = float(coefficient) - used
+                if remaining <= max(5.0, float(coefficient) * 0.1):
+                    notes.append(
+                        f'{item["name"]}: 開封中の1{item["unit"]}がそろそろ空きます'
+                        f'（推定あと{max(0, int(remaining))}食分）。空いたら教えてください'
+                    )
+            continue
+
+        coefficient = float(item["coefficient"]) if ctype == "weight" else 1.0
         before = float(item["stock"])
-        consumed = _round_one(
-            quantity * float(ingredient["qty"]) * float(item["coefficient"])
-        )
+        consumed = _round_one(quantity * qty * coefficient)
         after = _round_one(before - consumed)
         item["stock"] = after
-        changes.append(
-            f'{item["name"]} {_display_number(before)} → '
-            f'{_display_number(after)}{item["unit"]}'
-            f'（{_display_number(consumed)}{item["unit"]}減）'
-        )
+        if after < 0 <= before:
+            # 負値は保持し、数字を出さない（設計書 原則10）。エラーでは止めない
+            changes.append(
+                f'{item["name"]} 理論値が在庫を割りました。実際にはまだ残っているはずです。'
+                "こちらの計算が少なく見積もっていました。締めに一度量ってください"
+            )
+        elif after < 0:
+            changes.append(f'{item["name"]} {NEGATIVE_STOCK_DISPLAY}')
+        else:
+            changes.append(
+                f'{item["name"]} {_display_number(before)} → '
+                f'{_display_number(after)}{item["unit"]}'
+                f'（{_display_number(consumed)}{item["unit"]}減）'
+            )
 
     state["history"].append(
         {
@@ -232,34 +299,59 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
     )
     if conflict := _save(state):
         return conflict
-    return "、".join(changes)
+    parts = changes + notes
+    if not parts:
+        return f'{product["name"]} {quantity}個を記録しました。'
+    return "、".join(parts)
 
 
 @tool
 @_serialized
 def record_count(item_id: str, actual_stock: float) -> str:
-    """棚卸し実測値を記録し、前回棚卸し後の差から消費係数を補正します。
+    """棚卸し実測値を記録します。weight型は前回棚卸し後の差から消費係数を補正します。
+
+    count型は数え直しのみ（係数は1.0固定）。unit型はユニット数の数え直しのみで、
+    係数は使い切りの記録（record_unit_used）で確定します。
 
     Args:
         item_id: 品目ID。例: meat_chicken（ケバブ肉・チキン）。
         actual_stock: 棚卸しで数えた現在庫。品目の登録単位で指定する。
+            unit型は開封中のものも1と数えたユニット数。
     """
     if actual_stock < 0:
         return "実測在庫は0以上で指定してください。"
 
     state = load_state()
     item = _find(state["items"], item_id)
-    if item is None or item.get("tier") != 1:
-        return f"Tier 1品目ID「{item_id}」は見つかりません。"
+    if item is None or not item.get("active", True):
+        return f"品目ID「{item_id}」は見つかりません。"
 
+    ctype = _consumption_type(item)
     counted_at = _now_iso()
-    previous_coefficient = float(item["coefficient"])
+    previous_coefficient = float(item.get("coefficient") or 1.0)
     calculated_stock = float(item["stock"])
     last_counted = item.get("last_counted")
 
     warning = ""
     message: str
-    if last_counted is None:
+    if ctype == "unit":
+        message = (
+            f'{item["name"]}のユニット数を数え直しました。'
+            f'「1{item["unit"]}＝何食分」は使い切りの記録で確定します。'
+        )
+    elif ctype == "count":
+        difference = _round_one(calculated_stock - actual_stock)
+        if difference == 0:
+            message = f'{item["name"]}は理論値どおりです。'
+        else:
+            # 数で管理する品目の差は係数では説明できない。事実だけ返す（原則12）
+            direction = "少ない" if difference > 0 else "多い"
+            message = (
+                f'{item["name"]}は理論値より{_display_number(abs(difference))}'
+                f'{item["unit"]}{direction}実測でした。数で管理する品目のため、'
+                "記録漏れや廃棄がなかったかご確認ください。"
+            )
+    elif last_counted is None:
         message = (
             f'{item["name"]}は初回棚卸しのため係数は'
             f"{previous_coefficient:.2f}のままです。"
@@ -267,6 +359,8 @@ def record_count(item_id: str, actual_stock: float) -> str:
     else:
         last_counted_at = _parse_iso(last_counted)
         theoretical_consumption = 0.0
+        recipe_consumption = 0.0
+        servings = 0.0
         for sale in state["history"]:
             recorded_at = sale.get("recorded_at")
             product_id = sale.get("product_id")
@@ -288,11 +382,12 @@ def record_count(item_id: str, actual_stock: float) -> str:
                 None,
             )
             if recipe:
+                quantity = float(sale["quantity"])
                 theoretical_consumption += (
-                    float(sale["quantity"])
-                    * float(recipe["qty"])
-                    * previous_coefficient
+                    quantity * float(recipe["qty"]) * previous_coefficient
                 )
+                recipe_consumption += quantity * float(recipe["qty"])
+                servings += quantity
 
         if theoretical_consumption > 0:
             actual_consumption = theoretical_consumption + (
@@ -301,13 +396,25 @@ def record_count(item_id: str, actual_stock: float) -> str:
             new_coefficient = previous_coefficient * (
                 actual_consumption / theoretical_consumption
             )
-            clamped = min(1.5, max(0.8, new_coefficient))
+            # 係数の上限: レシピ値±4g/食（設計書2章）。盛り付けのブレの物理限界
+            base_per_serving = recipe_consumption / servings
+            lower = max(0.0, base_per_serving - WEIGHT_BOUND_PER_SERVING) / base_per_serving
+            upper = (base_per_serving + WEIGHT_BOUND_PER_SERVING) / base_per_serving
+            clamped = min(upper, max(lower, new_coefficient))
             item["coefficient"] = round(clamped, 4)
             message = (
                 f'{item["name"]}の係数を{previous_coefficient:.2f}から'
                 f'{item["coefficient"]:.2f}に更新しました。'
             )
-            if clamped != new_coefficient or abs(clamped - previous_coefficient) > 0.15:
+            if clamped != new_coefficient:
+                warning = (
+                    f' 係数が盛り付けで説明できる範囲'
+                    f'（レシピ値±{_display_number(WEIGHT_BOUND_PER_SERVING)}'
+                    f'{item["unit"]}/食）の上限に達しています。'
+                    "これ以上は自動で調整しません。"
+                    "レシピそのものの見直しが必要かもしれません。"
+                )
+            elif abs(clamped - previous_coefficient) > 0.15:
                 warning = " 大きくズレています。数え間違いの可能性もご確認ください。"
         else:
             message = (
@@ -315,6 +422,7 @@ def record_count(item_id: str, actual_stock: float) -> str:
                 f"{previous_coefficient:.2f}のままです。"
             )
 
+    label_before = _growth_label(item)
     item["stock"] = _round_one(actual_stock)
     item["last_counted"] = counted_at
     item.setdefault("count_history", []).append(
@@ -323,12 +431,30 @@ def record_count(item_id: str, actual_stock: float) -> str:
             "actual_stock": item["stock"],
             "calculated_stock": calculated_stock,
             "coefficient_before": previous_coefficient,
-            "coefficient_after": float(item["coefficient"]),
+            "coefficient_after": float(item.get("coefficient") or 1.0),
         }
     )
     growth = _growth_label(item)
     growth_note = ""
-    if growth.startswith("学習中"):
+    if ctype == "weight" and label_before.startswith("学習中") and not growth.startswith("学習中"):
+        # 学習終了時に初期値と確定値の差を必ず見せる。黙って確定させない（設計書2章）
+        recipe_values = [
+            float(ingredient["qty"])
+            for product in state["products"]
+            for ingredient in product["recipe"]
+            if ingredient["item_id"] == item_id
+        ]
+        if recipe_values:
+            base = sum(recipe_values) / len(recipe_values)
+            final = base * float(item["coefficient"])
+            percent = (final - base) / base * 100
+            growth_note = (
+                f' 学習が終了しました。{item["name"]}: 1食あたり'
+                f'{_display_number(_round_one(base))}{item["unit"]} → '
+                f'{_display_number(_round_one(final))}{item["unit"]}'
+                f"（{percent:+.0f}%）。この幅でよろしければ、一度ご確認ください。"
+            )
+    elif growth.startswith("学習中"):
         growth_note = f" {growth}。数字は参考程度に見てください。"
     elif growth.startswith("係数が安定しません"):
         growth_note = f" {growth}"
@@ -338,6 +464,95 @@ def record_count(item_id: str, actual_stock: float) -> str:
         f"{message} 在庫を{_display_number(float(item['stock']))}"
         f'{item["unit"]}に更新しました。{warning}{growth_note}'
     ).rstrip()
+
+
+@tool
+@_serialized
+def record_unit_used(item_id: str, opened_next: bool = True) -> str:
+    """ユニット型品目（ソース・油・玉ねぎ等）を1ユニット使い切った時に記録します。
+
+    開封時点からの累計食数の差で「1ユニット＝何食分」を確定します（設計書2章）。
+    途中の残量は扱いません。確定した事実（空になった）だけで学習します。
+    開封の起点がまだ無い場合は、いま使っている1ユニットの開封起点だけを記録します。
+
+    Args:
+        item_id: 品目ID。例: sauce_yogurt。
+        opened_next: 空になった後、次の1ユニットをすぐ開けたか。開けていなければ False。
+    """
+    state = load_state()
+    item = _find(state["items"], item_id)
+    if item is None or not item.get("active", True):
+        return f"品目ID「{item_id}」は見つかりません。"
+    if _consumption_type(item) != "unit":
+        return (
+            f'{item["name"]}はユニット型ではありません。'
+            "棚卸しは record_count を使ってください。"
+        )
+
+    unit = item["unit"]
+    sales_count = float(item.get("sales_count", 0))
+    opened_at = item.get("opened_at_sales_count")
+
+    if opened_at is None:
+        item["opened_at_sales_count"] = sales_count
+        if conflict := _save(state):
+            return conflict
+        return (
+            f'{item["name"]}の開封を記録しました。この1{unit}が空になったら'
+            f'また教えてください。そこで「1{unit}＝何食分」が確定します。'
+        )
+
+    servings = int(round(sales_count - float(opened_at)))
+    history = item.setdefault("unit_history", [])
+    anomaly = ""
+    if servings <= 0:
+        anomaly = (
+            f"開封からの売上が記録されていないため、今回の1{unit}は係数に反映しません。"
+            "売上の記録漏れがないかご確認ください。"
+        )
+    elif len(history) >= UNIT_BOUND_MIN_SAMPLES:
+        # 上限判定: 過去実績の±20%（設計書2章）。超えた値は事実として残すが学習しない
+        average = sum(history) / len(history)
+        if abs(servings - average) > UNIT_BOUND_RATIO * average:
+            anomaly = (
+                f"1{unit}で{servings}食は、過去実績（平均{average:.0f}食）の"
+                f"±{int(UNIT_BOUND_RATIO * 100)}%を超えています。係数には反映しません。"
+                "別用途に使ったか、売上か使い切りの記録漏れの可能性があります。"
+            )
+    if not anomaly:
+        history.append(servings)
+        item["coefficient"] = round(sum(history) / len(history), 1)
+
+    item.setdefault("count_history", []).append(
+        {
+            "recorded_at": _now_iso(),
+            "event": "unit_used",
+            "servings": servings,
+            "reflected": not anomaly,
+            "coefficient_after": item.get("coefficient"),
+        }
+    )
+    before = float(item["stock"])
+    item["stock"] = _round_one(before - 1)
+    item["opened_at_sales_count"] = sales_count if opened_next else None
+
+    if conflict := _save(state):
+        return conflict
+
+    stock_display = _display_stock(item)
+    if anomaly:
+        return f'{item["name"]}: {anomaly} 残り{stock_display}。'
+    coefficient = float(item["coefficient"])
+    capacity_note = (
+        f"（あと約{int(max(0.0, float(item['stock'])) * coefficient)}食分）"
+        if float(item["stock"]) >= 0
+        else ""
+    )
+    return (
+        f'{item["name"]}: 1{unit}で{servings}食でした。'
+        f"実績{len(history)}回 → 1{unit}≈{coefficient:.0f}食。"
+        f"残り{stock_display}{capacity_note}。"
+    )
 
 
 @tool
@@ -427,19 +642,45 @@ def record_purchase(purchases: list[dict]) -> str:
 @tool
 @_serialized
 def get_stock_status() -> str:
-    """全Tier 1品目の現在庫、係数、育成フェーズ、最終棚卸し、直近の設定変更を返します。"""
+    """全品目の現在庫、係数、育成フェーズ、最終棚卸し、直近の設定変更を返します。
+
+    理論値がマイナスの品目は数字を出さず「実測が必要です」と返します（原則10）。
+    """
     state = load_state()
     lines: list[str] = []
     for item in state["items"]:
-        if item.get("tier") != 1 or not item.get("active", True):
+        if not item.get("active", True):
             continue
+        ctype = _consumption_type(item)
         last_counted = item.get("last_counted")
         last_display = _fmt_dt(last_counted) if last_counted else "未実施"
-        lines.append(
-            f'- {item["name"]}: {_display_number(float(item["stock"]))}'
-            f'{item["unit"]}、係数 {float(item["coefficient"]):.2f}、'
-            f"{_growth_label(item)}、最終棚卸し {last_display}"
-        )
+        if ctype == "unit":
+            coefficient = item.get("coefficient")
+            coef_display = (
+                f'1{item["unit"]}≈{float(coefficient):.0f}食'
+                if coefficient
+                else "未学習"
+            )
+            opened_at = item.get("opened_at_sales_count")
+            opened_note = ""
+            if opened_at is not None:
+                used = int(round(float(item.get("sales_count", 0)) - float(opened_at)))
+                opened_note = f'、開封中の1{item["unit"]}は{used}食目'
+            lines.append(
+                f'- {item["name"]}: {_display_stock(item)}、{coef_display}、'
+                f"{_growth_label(item)}{opened_note}、最終棚卸し {last_display}"
+            )
+        elif ctype == "count":
+            lines.append(
+                f'- {item["name"]}: {_display_stock(item)}、係数固定、'
+                f"最終棚卸し {last_display}"
+            )
+        else:
+            lines.append(
+                f'- {item["name"]}: {_display_stock(item)}、'
+                f'係数 {float(item["coefficient"]):.2f}、'
+                f"{_growth_label(item)}、最終棚卸し {last_display}"
+            )
 
     settings_log = state.get("settings_log", [])
     if settings_log:
@@ -507,31 +748,167 @@ def get_capacity() -> str:
         servings: float | None = None
         bottleneck = ""
         missing = ""
+        unlearned: list[str] = []
         for ingredient in product["recipe"]:
             item = _find(state["items"], ingredient["item_id"])
             if item is None or not item.get("active", True):
                 missing = ingredient["item_id"]
                 break
-            if item.get("tier") != 1:
+            ctype = _consumption_type(item)
+            qty = float(ingredient["qty"])
+            if qty <= 0:
                 continue
-            per_serving = float(ingredient["qty"]) * float(item["coefficient"])
-            if per_serving <= 0:
-                continue
-            possible = float(item["stock"]) / per_serving
+            if ctype == "unit":
+                coefficient = item.get("coefficient")
+                if not coefficient:
+                    # 未学習のユニット型は残数を出せない。黙って0にも∞にもしない
+                    unlearned.append(item["name"])
+                    continue
+                available = float(item["stock"]) * float(coefficient)
+                opened_at = item.get("opened_at_sales_count")
+                if opened_at is not None:
+                    available -= float(item.get("sales_count", 0)) - float(opened_at)
+                possible = available / qty
+            else:
+                coefficient = float(item["coefficient"]) if ctype == "weight" else 1.0
+                per_serving = qty * coefficient
+                if per_serving <= 0:
+                    continue
+                possible = float(item["stock"]) / per_serving
             if servings is None or possible < servings:
                 servings = possible
                 bottleneck = item["name"]
+        unlearned_note = (
+            f'（{"、".join(unlearned)}は学習前のため計算に含めていません）'
+            if unlearned
+            else ""
+        )
         if missing:
             lines.append(
                 f'- {product["name"]}: 計算不可（品目「{missing}」が未登録または無効）'
             )
         elif servings is None:
-            lines.append(f'- {product["name"]}: レシピにTier 1品目がありません')
+            lines.append(
+                f'- {product["name"]}: 残数を計算できる品目がありません{unlearned_note}'
+            )
+        elif servings < 0:
+            lines.append(
+                f'- {product["name"]}: {bottleneck}の理論値が在庫を割っています。'
+                f"実測が必要です{unlearned_note}"
+            )
         else:
             lines.append(
                 f'- {product["name"]}: あと{int(servings)}食'
-                f"（ボトルネック: {bottleneck}）"
+                f"（ボトルネック: {bottleneck}）{unlearned_note}"
             )
+    return "\n".join(lines)
+
+
+@tool
+@_serialized
+def get_monthly_reconciliation(month: str = "") -> str:
+    """月次突合: 棚卸し実測の変化と「仕入れ − レシピ理論消費」を品目ごとに突き合わせます。
+
+    日々の上限（±4g/食）の内側に収まる小さな差も、月単位の積算では見えます（原則12）。
+    差の原因（記録漏れ・廃棄・抜き取り）は区別できないため、事実だけを返します。
+    ユニット型は使い切り実績そのものが突合になるため対象外です。
+
+    Args:
+        month: 対象月（YYYY-MM）。省略時は今月。
+    """
+    if month:
+        if not re.match(r"^\d{4}-\d{2}$", month):
+            return "month は YYYY-MM 形式で指定してください。例: 2026-09"
+    else:
+        month = _now().strftime("%Y-%m")
+
+    state = load_state()
+    findings: list[str] = []
+    uncheckable: list[str] = []
+    for item in state["items"]:
+        if not item.get("active", True):
+            continue
+        ctype = _consumption_type(item)
+        if ctype == "unit":
+            continue
+        counts = [
+            entry
+            for entry in item.get("count_history", [])
+            if "actual_stock" in entry and entry["recorded_at"][:7] == month
+        ]
+        if len(counts) < 2:
+            uncheckable.append(item["name"])
+            continue
+        first, last = counts[0], counts[-1]
+        window_start = _parse_iso(first["recorded_at"])
+        window_end = _parse_iso(last["recorded_at"])
+
+        purchased = 0.0
+        recipe_consumption = 0.0
+        servings = 0.0
+        for entry in state["history"]:
+            recorded_at = entry.get("recorded_at")
+            if recorded_at is None:
+                continue
+            at = _parse_iso(recorded_at)
+            if not (window_start < at <= window_end):
+                continue
+            if entry.get("type") == "purchase":
+                if entry.get("item_id") == item["id"]:
+                    purchased += float(entry["amount"])
+                continue
+            product_id = entry.get("product_id")
+            if product_id is None:
+                continue
+            product = _find(state["products"], product_id)
+            if product is None:
+                continue
+            recipe = next(
+                (i for i in product["recipe"] if i["item_id"] == item["id"]), None
+            )
+            if recipe:
+                quantity = float(entry["quantity"])
+                recipe_consumption += quantity * float(recipe["qty"])
+                servings += quantity
+
+        # レシピ値ベースの期待在庫と実測の差。係数を経由しないので、
+        # 係数に吸収されたズレも積算では表に出る（設計書 原則12「月次で見る」）
+        expected_last = float(first["actual_stock"]) + purchased - recipe_consumption
+        gap = _round_one(expected_last - float(last["actual_stock"]))
+        allowance = (
+            _round_one(WEIGHT_BOUND_PER_SERVING * servings)
+            if ctype == "weight"
+            else 0.0
+        )
+        if gap == 0 or abs(gap) <= allowance:
+            continue
+        unit = item["unit"]
+        period = f'{_fmt_dt(first["recorded_at"])}〜{_fmt_dt(last["recorded_at"])}'
+        direction = "不足" if gap > 0 else "余剰"
+        if ctype == "weight":
+            findings.append(
+                f'- {item["name"]}: {period}に仕入れ{_display_number(purchased)}{unit}、'
+                f"レシピ理論消費{_display_number(_round_one(recipe_consumption))}{unit}"
+                f"（売上{_display_number(servings)}食）。実測との差 "
+                f"{_display_number(abs(gap))}{unit}（{direction}）は、盛り付けのブレ"
+                f"（±{_display_number(WEIGHT_BOUND_PER_SERVING)}{unit}/食 ＝ "
+                f"{_display_number(allowance)}{unit}）では説明できません。"
+                "仕入れか売上の記録漏れがないかご確認ください"
+            )
+        else:
+            findings.append(
+                f'- {item["name"]}: {period}の実測との差 '
+                f"{_display_number(abs(gap))}{unit}（{direction}）。"
+                "数で管理する品目のため、記録漏れや廃棄がなかったかご確認ください"
+            )
+
+    lines = [f"{month} の月次突合:"]
+    if findings:
+        lines.extend(findings)
+    else:
+        lines.append("説明できない差はありません。")
+    if uncheckable:
+        lines.append("棚卸しが2回未満で突合できない品目: " + "、".join(uncheckable))
     return "\n".join(lines)
 
 
@@ -549,21 +926,28 @@ def register_item(
     unit_type: str,
     stock: float,
     tier: int = 1,
+    consumption_type: str = "",
     purchase_unit: str = "",
     unit_weight: float = 0.0,
     passphrase: str = "",
 ) -> str:
     """品目（材料・消耗品）を追加します。構造変更のため合言葉が必要です。
 
-    係数は必ず1.0から始めます（店主に決めさせない）。実測が育てます。
+    weight型の係数は必ず1.0から始めます（店主に決めさせない）。実測が育てます。
+    unit型は初期値を置かず、最初の使い切り（record_unit_used）で確定します。
 
     Args:
         item_id: 英小文字スネークケースのID。例: sauce_yogurt。AIが命名する。
         name: 表示名。例: ソース（ヨーグルト）。
-        unit: 消費単位。例: g、枚、本、個。
+        unit: 消費単位。例: g、枚、本、個、中子。
         unit_type: "weight"（重量）/ "volume"（容量）/ "count"（個数）。
         stock: 現在庫。ざっくりで良い。
-        tier: 管理区分。今回は1のみ運用。仮判定でよい。
+        tier: 管理区分。仮判定でよい。
+        consumption_type: 消費の数え方。"count"（数どおり減る）/
+            "weight"（量って盛る。係数を棚卸しで学習）/
+            "unit"（1本・1個・中子1杯で何食分か。使い切りで学習）。
+            カウンセリング段階5の「何を1として数えますか」の答えで決める。
+            品目名から決め打ちしない。省略時は unit_type から補う（count→count、他→weight）。
         purchase_unit: 仕入れ単位が消費単位と違う場合のみ。例: 本、袋。
         unit_weight: 1仕入れ単位あたりの目安量。purchase_unit がある場合のみ。
         passphrase: 店主の合言葉。
@@ -577,21 +961,31 @@ def register_item(
         return f"品目ID「{item_id}」は既に存在します。別のIDを使ってください。"
     if unit_type not in UNIT_TYPES:
         return 'unit_type は "weight" / "volume" / "count" のいずれかです。'
+    if consumption_type and consumption_type not in CONSUMPTION_TYPES:
+        return 'consumption_type は "count" / "weight" / "unit" のいずれかです。'
     if stock < 0:
         return "在庫は0以上で指定してください。"
 
+    if not consumption_type:
+        consumption_type = "count" if unit_type == "count" else "weight"
     item: dict[str, Any] = {
         "id": item_id,
         "name": name,
         "tier": tier,
         "unit": unit,
         "unit_type": unit_type,
+        "consumption_type": consumption_type,
         "stock": _round_one(stock),
         "coefficient": 1.0,
         "last_counted": None,
         "count_history": [],
         "active": True,
     }
+    if consumption_type == "unit":
+        item["coefficient"] = None
+        item["sales_count"] = 0
+        item["opened_at_sales_count"] = None
+        item["unit_history"] = []
     if purchase_unit:
         item["purchase_unit"] = purchase_unit
         if unit_weight > 0:
@@ -602,10 +996,17 @@ def register_item(
         "register_item",
         f"品目を追加: {name}（{_display_number(float(stock))}{unit}）",
         None,
-        {k: item[k] for k in ("id", "name", "unit", "stock")},
+        {k: item[k] for k in ("id", "name", "unit", "consumption_type", "stock")},
     )
     if conflict := _save(state):
         return conflict
+    if consumption_type == "unit":
+        return (
+            f"{name}を登録しました（{_display_number(float(stock))}{unit}）。"
+            f"1{unit}＝何食分かは最初の使い切りで学習します。"
+        )
+    if consumption_type == "count":
+        return f"{name}を登録しました（{_display_number(float(stock))}{unit}、数どおり管理）。"
     return (
         f"{name}を登録しました（{_display_number(float(stock))}{unit}、係数1.00から学習開始）。"
     )
