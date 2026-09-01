@@ -1,7 +1,7 @@
 [project]
 name = "repl-nix-workspace"
 version = "0.1.0"
-description = "Tier 1 inventory CLI for a hot-dog food truck"
+description = "teruo — inventory agent CLI for kebab food trucks"
 requires-python = ">=3.11"
 dependencies = [
     "strands-agents==1.54.0",
