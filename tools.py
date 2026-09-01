@@ -90,6 +90,21 @@ def _display_number(value: float) -> str:
     return str(int(value)) if float(value).is_integer() else f"{value:.1f}"
 
 
+# 事実（ツールの確定出力）はPythonが直接画面に出す（原則3: 計算はPython、判断はAI）。
+# LLMの要約で明細が欠けたり数字が変わるのを防ぐ。seed_demo.py 等は False にして黙らせる。
+DIRECT_OUTPUT = True
+
+TOLD_MARKER = "[画面に表示済み。内容を繰り返さず、必要な判断や次の一手だけ短く添える]"
+
+
+def _tell(text: str) -> str:
+    """確定出力を stdout に直接印字し、LLMには復唱しないよう印を付けて渡す。"""
+    if DIRECT_OUTPUT:
+        print(text, flush=True)
+        return f"{TOLD_MARKER}\n{text}"
+    return text
+
+
 def _find(records: list[dict[str, Any]], record_id: str) -> dict[str, Any] | None:
     return next((record for record in records if record["id"] == record_id), None)
 
@@ -309,7 +324,7 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
     lines = [f'{product["name"]} {quantity}個を記録しました。']
     lines.extend(f"- {change}" for change in changes)
     lines.extend(notes)
-    return "\n".join(lines)
+    return _tell("\n".join(lines))
 
 
 @tool
@@ -467,10 +482,12 @@ def record_count(item_id: str, actual_stock: float) -> str:
         growth_note = f" {growth}"
     if conflict := _save(state):
         return conflict
-    return (
-        f"{message} 在庫を{_display_number(float(item['stock']))}"
-        f'{item["unit"]}に更新しました。{warning}{growth_note}'
-    ).rstrip()
+    return _tell(
+        (
+            f"{message} 在庫を{_display_number(float(item['stock']))}"
+            f'{item["unit"]}に更新しました。{warning}{growth_note}'
+        ).rstrip()
+    )
 
 
 @tool
@@ -504,7 +521,7 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
         item["opened_at_sales_count"] = sales_count
         if conflict := _save(state):
             return conflict
-        return (
+        return _tell(
             f'{item["name"]}の開封を記録しました。この1{unit}が空になったら'
             f'また教えてください。そこで「1{unit}＝何食分」が確定します。'
         )
@@ -548,14 +565,14 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
 
     stock_display = _display_stock(item)
     if anomaly:
-        return f'{item["name"]}: {anomaly} 残り{stock_display}。'
+        return _tell(f'{item["name"]}: {anomaly} 残り{stock_display}。')
     coefficient = float(item["coefficient"])
     capacity_note = (
         f"（あと約{int(max(0.0, float(item['stock'])) * coefficient)}食分）"
         if float(item["stock"]) >= 0
         else ""
     )
-    return (
+    return _tell(
         f'{item["name"]}: 1{unit}で{servings}食でした。'
         f"実績{len(history)}回 → 1{unit}≈{coefficient:.0f}食。"
         f"残り{stock_display}{capacity_note}。"
@@ -695,7 +712,7 @@ def get_stock_status() -> str:
         lines.append("直近の設定変更:")
         for entry in settings_log[-5:]:
             lines.append(f'- {_fmt_dt(entry["changed_at"])} {entry["summary"]}')
-    return "\n".join(lines)
+    return _tell("\n".join(lines))
 
 
 @tool
@@ -916,7 +933,7 @@ def get_monthly_reconciliation(month: str = "") -> str:
         lines.append("説明できない差はありません。")
     if uncheckable:
         lines.append("棚卸しが2回未満で突合できない品目: " + "、".join(uncheckable))
-    return "\n".join(lines)
+    return _tell("\n".join(lines))
 
 
 # ---------------------------------------------------------------------------

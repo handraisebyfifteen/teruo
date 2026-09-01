@@ -5,7 +5,7 @@
 
 埋め込んである異常（チキン）:
 - 盛りブレ +3%（1食あたり約2g強。係数の上限±4g/食の内側 → 日次では正常）
-- 未記録の持ち出し・廃棄 1.5kg × 4回（棚卸しのたびに係数が上限警告を出す）
+- 未記録消費（記録されなかった廃棄・まかない等） 1.5kg × 4回（棚卸しのたびに係数が上限警告を出す）
 → 月次突合では「盛り付けで説明できる幅」を超えた差として現れる
 
 出力: data/state.demo-month.json（既存の data/state.json には触らない）
@@ -34,6 +34,8 @@ os.environ["INVENTORY_STATE_PATH"] = str(OUT_PATH)
 sys.path.insert(0, str(REPO_ROOT))
 
 import tools  # noqa: E402  （INVENTORY_STATE_PATH を設定してから import する）
+
+tools.DIRECT_OUTPUT = False  # シード生成中はツールに印字させない
 
 TZ = ZoneInfo("Asia/Tokyo")
 rng = random.Random(42)
@@ -100,9 +102,9 @@ RECIPES = {
 }
 SAUCE_PRODUCTS = ("kebab_sand", "kebab_wrap")  # ソースを1食分使う商品
 
-# 未記録の持ち出し・廃棄（チキン）。月内に4回、1.5kgずつ
-chunk_days = {business_days[i] for i in (5, 11, 17, 23)}
-CHUNK_G = 1500.0
+# 未記録消費（チキン。記録されなかった廃棄・まかない等）。月内に4回、1.5kgずつ
+unrecorded_days = {business_days[i] for i in (5, 11, 17, 23)}
+UNRECORDED_G = 1500.0
 # ピタの紛失（数え物のわずかな差のデモ）
 pita_loss_days = {business_days[8], business_days[19]}
 
@@ -204,9 +206,9 @@ chicken_count_days = set(business_days[6::6])  # 週1ペース
 for day in business_days:
     restock(day)
     daily_sales(day)
-    if day in chunk_days:
+    if day in unrecorded_days:
         at(day, 22, 0)
-        true_stock["meat_chicken"] -= CHUNK_G   # 記録されない持ち出し・廃棄
+        true_stock["meat_chicken"] -= UNRECORDED_G   # 記録されなかった消費
     if day in pita_loss_days:
         true_stock["pita"] -= 1                  # 記録されない紛失
     if day in chicken_count_days and day != last_day:
@@ -223,7 +225,7 @@ for item_id in true_stock:
 print(f"生成しました: {OUT_PATH}（対象月 {MONTH}、営業{len(business_days)}日）")
 print()
 print("埋め込んだ異常:")
-print(f"- チキン 盛りブレ +3% と、未記録の持ち出し {CHUNK_G:.0f}g × {len(chunk_days)}回")
+print(f"- チキン 盛りブレ +3% と、未記録消費 {UNRECORDED_G:.0f}g × {len(unrecorded_days)}回")
 print(f"- ピタ 紛失 {len(pita_loss_days)}枚")
 print()
 print(f"月中の棚卸しで出た上限警告: {len(count_warnings)}回")

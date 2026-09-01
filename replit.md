@@ -29,6 +29,10 @@
 ## Architecture decisions
 
 - All arithmetic runs in Python tools, never in the model.
+- Factual tool output (sales breakdown, count results, unit-used results,
+  stock status, monthly reconciliation) prints directly to stdout from the
+  tool; the LLM is told not to repeat it and only adds judgment. This keeps
+  the numbers on screen deterministic (design principle 3).
 - State writes replace the JSON file atomically to avoid partial-file corruption.
 - The first stock count establishes a baseline and does not alter the coefficient.
 - Consumption logic has three types (design doc ch.2): `count` (fixed 1.0),
