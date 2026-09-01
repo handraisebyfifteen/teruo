@@ -259,8 +259,15 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
             item["sales_count"] = float(item.get("sales_count", 0)) + quantity * qty
             coefficient = item.get("coefficient")
             opened_at = item.get("opened_at_sales_count")
+            used_note = ""
+            if opened_at is not None:
+                used = int(round(float(item["sales_count"]) - float(opened_at)))
+                used_note = f'、開封中の1{item["unit"]}は{used}食目'
+            changes.append(
+                f'{item["name"]} 在庫は動かしません'
+                f'（累計{_display_number(float(item["sales_count"]))}食{used_note}）'
+            )
             if coefficient and opened_at is not None:
-                used = float(item["sales_count"]) - float(opened_at)
                 remaining = float(coefficient) - used
                 if remaining <= max(5.0, float(coefficient) * 0.1):
                     notes.append(
@@ -299,10 +306,10 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
     )
     if conflict := _save(state):
         return conflict
-    parts = changes + notes
-    if not parts:
-        return f'{product["name"]} {quantity}個を記録しました。'
-    return "、".join(parts)
+    lines = [f'{product["name"]} {quantity}個を記録しました。']
+    lines.extend(f"- {change}" for change in changes)
+    lines.extend(notes)
+    return "\n".join(lines)
 
 
 @tool
