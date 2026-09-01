@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="880" height="960" viewBox="0 0 880 960" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic UI','Meiryo',sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="1064" viewBox="0 0 880 1064" font-family="'Hiragino Sans','Noto Sans JP','Yu Gothic UI','Meiryo',sans-serif">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="880" height="960" fill="#ffffff"/>
+  <rect x="0" y="0" width="880" height="1064" fill="#ffffff"/>
 
   <!-- タイトル -->
   <text x="40" y="44" font-size="22" font-weight="700" fill="#0f172a">teruo — アーキテクチャ</text>
@@ -21,61 +21,74 @@
   <line x1="450" y1="228" x2="450" y2="174" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
   <text x="468" y="206" font-size="12.5" fill="#475569">対話</text>
 
-  <!-- エージェント -->
-  <rect x="180" y="230" width="520" height="112" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
-  <rect x="196" y="246" width="52" height="24" rx="12" fill="#3b82f6"/>
-  <text x="222" y="263" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">判断</text>
-  <text x="262" y="264" font-size="16" font-weight="700" fill="#1e3a8a">Strands Agent</text>
-  <text x="262" y="286" font-size="12.5" fill="#1e40af">Amazon Bedrock ／ Claude Sonnet（us-east-2）</text>
-  <text x="196" y="316" font-size="12.5" fill="#334155">・どの品目を今日数えてもらうか選ぶ　・異常値の指摘</text>
-  <text x="196" y="334" font-size="12.5" fill="#334155">・報告のタイミング（営業中は黙る、開店前に伝える）</text>
+  <!-- 判断層: 3エージェント -->
+  <rect x="120" y="230" width="640" height="222" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <rect x="136" y="246" width="52" height="24" rx="12" fill="#3b82f6"/>
+  <text x="162" y="263" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">判断</text>
+  <text x="202" y="264" font-size="16" font-weight="700" fill="#1e3a8a">Strands Agents — 役割で3つに分割</text>
+  <text x="202" y="284" font-size="12.5" fill="#1e40af">Amazon Bedrock ／ Claude（us-east-2）・agents as tools</text>
+
+  <rect x="140" y="296" width="600" height="60" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="156" y="320" font-size="13.5" font-weight="700" fill="#1e3a8a">報告係（窓口）</text>
+  <text x="156" y="342" font-size="12.5" fill="#334155">いつ何を言うか決める。営業中は黙る。構造変更（合言葉）は店主と直接</text>
+
+  <line x1="300" y1="356" x2="300" y2="378" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="580" y1="356" x2="580" y2="378" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="140" y="380" width="290" height="56" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="156" y="402" font-size="13.5" font-weight="700" fill="#1e3a8a">記録係</text>
+  <text x="156" y="424" font-size="12.5" fill="#334155">売上・棚卸し・仕入れを記録。判断しない</text>
+
+  <rect x="450" y="380" width="290" height="56" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="466" y="402" font-size="13.5" font-weight="700" fill="#1e3a8a">観測係</text>
+  <text x="466" y="424" font-size="12.5" fill="#334155">異常を見つけ、今日数える2〜3品目を選ぶ</text>
 
   <!-- 矢印: tool 呼び出し -->
-  <line x1="440" y1="342" x2="440" y2="396" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="458" y="374" font-size="12.5" fill="#475569">tool 呼び出し（数値は渡すだけ・暗算しない）</text>
+  <line x1="440" y1="452" x2="440" y2="500" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="458" y="482" font-size="12.5" fill="#475569">tool 呼び出し（数値は渡すだけ・暗算しない）</text>
 
   <!-- Python ツール群 -->
-  <rect x="80" y="398" width="720" height="378" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
-  <rect x="96" y="414" width="52" height="24" rx="12" fill="#10b981"/>
-  <text x="122" y="431" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">計算</text>
-  <text x="162" y="432" font-size="16" font-weight="700" fill="#065f46">Python ツール群 — 計算はすべてここ</text>
+  <rect x="80" y="502" width="720" height="378" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="96" y="518" width="52" height="24" rx="12" fill="#10b981"/>
+  <text x="122" y="535" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">計算</text>
+  <text x="162" y="536" font-size="16" font-weight="700" fill="#065f46">Python ツール群 — 計算はすべてここ</text>
 
   <!-- 日々の入力・照会 -->
-  <rect x="104" y="452" width="328" height="196" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
-  <text x="120" y="478" font-size="13.5" font-weight="700" fill="#065f46">日々の入力・照会（誰でも・合言葉不要）</text>
-  <text x="120" y="504" font-size="12.5" fill="#334155">record_sales　売上 → 消費型ごとに在庫を減らす</text>
-  <text x="120" y="524" font-size="12.5" fill="#334155">record_count　棚卸し → weight 型の係数を学習</text>
-  <text x="120" y="544" font-size="12.5" fill="#334155">record_unit_used　使い切り → unit 型を確定</text>
-  <text x="120" y="564" font-size="12.5" fill="#334155">record_purchase　仕入れ（メモ貼り付け）</text>
-  <text x="120" y="584" font-size="12.5" fill="#334155">get_stock_status／get_capacity　在庫・残数</text>
-  <text x="120" y="604" font-size="12.5" fill="#334155">get_sales_summary　出店形態別の平均</text>
-  <text x="120" y="624" font-size="12.5" fill="#334155">get_monthly_reconciliation　月次突合</text>
+  <rect x="104" y="556" width="328" height="196" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="120" y="582" font-size="13.5" font-weight="700" fill="#065f46">日々の入力・照会（誰でも・合言葉不要）</text>
+  <text x="120" y="608" font-size="12.5" fill="#334155">record_sales　売上 → 消費型ごとに在庫を減らす</text>
+  <text x="120" y="628" font-size="12.5" fill="#334155">record_count　棚卸し → weight 型の係数を学習</text>
+  <text x="120" y="648" font-size="12.5" fill="#334155">record_unit_used　使い切り → unit 型を確定</text>
+  <text x="120" y="668" font-size="12.5" fill="#334155">record_purchase　仕入れ（メモ貼り付け）</text>
+  <text x="120" y="688" font-size="12.5" fill="#334155">get_stock_status／get_capacity　在庫・残数</text>
+  <text x="120" y="708" font-size="12.5" fill="#334155">get_sales_summary　出店形態別の平均</text>
+  <text x="120" y="728" font-size="12.5" fill="#334155">get_monthly_reconciliation　月次突合</text>
 
   <!-- 構造変更 -->
-  <rect x="448" y="452" width="336" height="196" rx="8" fill="#ffffff" stroke="#fca5a5" stroke-width="1.5"/>
-  <text x="464" y="478" font-size="13.5" font-weight="700" fill="#991b1b">構造変更（店主のみ・合言葉＋変更通知）</text>
-  <text x="464" y="504" font-size="12.5" fill="#334155">register_item ／ register_product　登録</text>
-  <text x="464" y="524" font-size="12.5" fill="#334155">update_recipe ／ update_item　レシピ・単位</text>
-  <text x="464" y="544" font-size="12.5" fill="#334155">delete_product　商品削除（品目は消せない）</text>
-  <text x="464" y="564" font-size="12.5" fill="#334155">update_config　合言葉・通知先メール</text>
-  <text x="464" y="596" font-size="12.5" fill="#991b1b">変更前後の値を必ず履歴に残す</text>
-  <text x="464" y="616" font-size="12.5" fill="#991b1b">日々の入力から係数経由でレシピを</text>
-  <text x="464" y="634" font-size="12.5" fill="#991b1b">書き換える迂回路は、係数の上限で塞ぐ</text>
+  <rect x="448" y="556" width="336" height="196" rx="8" fill="#ffffff" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="464" y="582" font-size="13.5" font-weight="700" fill="#991b1b">構造変更（店主のみ・合言葉＋変更通知）</text>
+  <text x="464" y="608" font-size="12.5" fill="#334155">register_item ／ register_product　登録</text>
+  <text x="464" y="628" font-size="12.5" fill="#334155">update_recipe ／ update_item　レシピ・単位</text>
+  <text x="464" y="648" font-size="12.5" fill="#334155">delete_product　商品削除（品目は消せない）</text>
+  <text x="464" y="668" font-size="12.5" fill="#334155">update_config　合言葉・通知先メール</text>
+  <text x="464" y="700" font-size="12.5" fill="#991b1b">変更前後の値を必ず履歴に残す</text>
+  <text x="464" y="720" font-size="12.5" fill="#991b1b">日々の入力から係数経由でレシピを</text>
+  <text x="464" y="738" font-size="12.5" fill="#991b1b">書き換える迂回路は、係数の上限で塞ぐ</text>
 
   <!-- 消費型3分類 -->
-  <rect x="104" y="664" width="680" height="96" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
-  <text x="120" y="688" font-size="13.5" font-weight="700" fill="#065f46">消費型（consumption_type）で係数ロジックが3系統に分かれる</text>
-  <text x="120" y="712" font-size="12.5" fill="#334155">count　　係数なし。1.0 固定（ピタ・紙類）— 動かないので他品目の基準線になる</text>
-  <text x="120" y="732" font-size="12.5" fill="#334155">weight　棚卸しの差分で1食あたりの量を学習。上限はレシピ値 ±4g/食（肉・ライス）</text>
-  <text x="120" y="752" font-size="12.5" fill="#334155">unit　　 使い切りで「1本＝何食分」を確定。上限は過去実績 ±20%（ソース・油）</text>
+  <rect x="104" y="768" width="680" height="96" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="120" y="792" font-size="13.5" font-weight="700" fill="#065f46">消費型（consumption_type）で係数ロジックが3系統に分かれる</text>
+  <text x="120" y="816" font-size="12.5" fill="#334155">count　　係数なし。1.0 固定（ピタ・紙類）— 動かないので他品目の基準線になる</text>
+  <text x="120" y="836" font-size="12.5" fill="#334155">weight　棚卸しの差分で1食あたりの量を学習（実測へ半分ずつ寄せる）。上限はレシピ値 ±4g/食</text>
+  <text x="120" y="856" font-size="12.5" fill="#334155">unit　　 使い切りで「1本＝何食分」を確定。上限は過去実績 ±20%（ソース・油）</text>
 
   <!-- 矢印: 読み書き -->
-  <line x1="440" y1="776" x2="440" y2="830" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="458" y="808" font-size="12.5" fill="#475569">読み書き（アトミック書き込み・同時書き込み検知）</text>
+  <line x1="440" y1="880" x2="440" y2="934" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="458" y="912" font-size="12.5" fill="#475569">読み書き（アトミック書き込み・同時書き込み検知）</text>
 
   <!-- データ -->
-  <rect x="180" y="832" width="520" height="92" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
-  <text x="440" y="860" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">data/state.json</text>
-  <text x="440" y="882" font-size="12.5" fill="#475569" text-anchor="middle">在庫・レシピ・売上履歴（event/solo別）・使い切り実績・設定変更履歴</text>
-  <text x="440" y="904" font-size="12.5" fill="#475569" text-anchor="middle">記録するのは「いつ」まで。「誰が入力したか」は持たない</text>
+  <rect x="180" y="936" width="520" height="92" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="440" y="964" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle">data/state.json</text>
+  <text x="440" y="986" font-size="12.5" fill="#475569" text-anchor="middle">在庫・レシピ・売上履歴（event/solo別）・使い切り実績・設定変更履歴</text>
+  <text x="440" y="1008" font-size="12.5" fill="#475569" text-anchor="middle">記録するのは「いつ」まで。「誰が入力したか」は持たない</text>
 </svg>
