@@ -56,6 +56,10 @@ STABLE_COEFFICIENT_BAND = 0.05
 
 # 係数の上限（設計書2章）。盛り方のブレは物理的に1食±3〜4gが限度。
 WEIGHT_BOUND_PER_SERVING = 4.0
+# 係数更新の平滑化。実測1回分の補正をそのまま採ると日ごとの手のブレ（±5%程度）を
+# 全量追いかけて振動する（収束シミュレーションで確認）。半分ずつ寄せると
+# 5回でほぼ収束したまま、振れ幅が半減する。
+COEFFICIENT_SMOOTHING = 0.5
 # ユニット型: 過去実績の±20%。実績3回そろうまで上限判定しない。
 UNIT_BOUND_RATIO = 0.2
 UNIT_BOUND_MIN_SAMPLES = 3
@@ -415,8 +419,12 @@ def record_count(item_id: str, actual_stock: float) -> str:
             actual_consumption = theoretical_consumption + (
                 calculated_stock - actual_stock
             )
-            new_coefficient = previous_coefficient * (
+            measured_coefficient = previous_coefficient * (
                 actual_consumption / theoretical_consumption
+            )
+            # 平滑化: 実測1回に全量は寄せず、半分だけ寄せる（振動対策）
+            new_coefficient = previous_coefficient + COEFFICIENT_SMOOTHING * (
+                measured_coefficient - previous_coefficient
             )
             # 係数の上限: レシピ値±4g/食（設計書2章）。盛り付けのブレの物理限界
             base_per_serving = recipe_consumption / servings
