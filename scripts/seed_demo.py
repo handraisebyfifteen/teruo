@@ -12,16 +12,24 @@ Embedded anomalies (chicken):
 → The monthly reconciliation surfaces it as a gap larger than portioning
   variance can explain.
 
-Output: data/state.demo-month.json (the existing data/state.json is untouched)
+Output: data/state.demo-month.json (the existing data/state.json is untouched).
+With --lang ja the Japanese template (data/state.ja.json) is used instead and
+the result goes to data/state.demo-month.ja.json; the generated state carries
+config.language so main.py needs no --lang flag.
 
 Usage:
     python scripts/seed_demo.py
     INVENTORY_STATE_PATH=data/state.demo-month.json python main.py
     > reconcile last month        # the generated month is last month
+
+    python scripts/seed_demo.py --lang ja
+    INVENTORY_STATE_PATH=data/state.demo-month.ja.json python main.py
+    > 先月の突合をして
 """
 
 from __future__ import annotations
 
+import argparse
 import os
 import random
 import shutil
@@ -31,13 +39,22 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-OUT_PATH = REPO_ROOT / "data" / "state.demo-month.json"
-
-shutil.copy(REPO_ROOT / "data" / "state.json", OUT_PATH)
-os.environ["INVENTORY_STATE_PATH"] = str(OUT_PATH)
 sys.path.insert(0, str(REPO_ROOT))
 
-import tools  # noqa: E402  (import after setting INVENTORY_STATE_PATH)
+import i18n  # noqa: E402
+
+_parser = argparse.ArgumentParser(description="Generate one month of demo records.")
+_parser.add_argument("--lang", default="en", help="en (default) or ja")
+LANGUAGE = i18n.set_language(_parser.parse_args().lang)
+SUFFIX = "" if LANGUAGE == "en" else f".{LANGUAGE}"
+TEMPLATE = REPO_ROOT / "data" / f"state{SUFFIX}.json"
+OUT_PATH = REPO_ROOT / "data" / f"state.demo-month{SUFFIX}.json"
+
+shutil.copy(TEMPLATE, OUT_PATH)
+os.environ["INVENTORY_STATE_PATH"] = str(OUT_PATH)
+
+import store  # noqa: E402  (import after setting INVENTORY_STATE_PATH)
+import tools  # noqa: E402
 
 tools.DIRECT_OUTPUT = False  # keep the tools quiet while seeding
 
@@ -166,7 +183,7 @@ def restock(day: date) -> None:
 
 def take_count(item_id: str) -> None:
     result = call(tools.record_count, item_id, round(true_stock[item_id], 1))
-    if "hit the cap" in result:
+    if tools.hit_cap(result):
         count_warnings.append(f"{_sim_now.date()} {result.splitlines()[0]}")
 
 
@@ -225,6 +242,11 @@ for day in business_days:
 at(last_day, 21, 30)
 for item_id in true_stock:
     take_count(item_id)
+
+# Remember the language in the generated state so main.py needs no --lang
+_state = store.load_state()
+_state["config"] = {**(_state.get("config") or {}), "language": LANGUAGE}
+store.save_state(_state)
 
 # ============================== Verification output ==============================
 

@@ -105,13 +105,35 @@ python main.py
 - `python main.py --setup` forces the onboarding interview to run again
 - Type `exit` or `quit` to leave
 
+## Language
+
+teruo speaks English by default. To run it in Japanese — prompts, tool
+output, and the CLI — pass `--lang ja` once:
+
+```bash
+python main.py --lang ja
+```
+
+The choice is saved to `data/state.json` (`config.language`), so later
+launches need no flag. `TERUO_LANG=ja` works as well. `data/state.ja.json`
+is the same demo shop with Japanese item names and counters (枚 / 本 / 個):
+
+```bash
+INVENTORY_STATE_PATH=data/state.ja.json python main.py
+```
+
+Every on-screen string lives in `i18n.py` next to its translation; the
+calculation code is shared. The design docs are written in Japanese and
+have English translations alongside (`docs/*.en.md`).
+
 ## Files
 
-- `main.py`: the interactive loop (operations mode / onboarding mode)
-- `agents.py`: the judgment layer's three agents (reporter, record keeper, observer)
+- `main.py`: the interactive loop (operations mode / onboarding mode), language selection
+- `agents.py`: the judgment layer's three agents (reporter, record keeper, observer), prompts in both languages
 - `tools.py`: the calculation tools (recording, registration, queries)
+- `i18n.py`: every user-facing string, English and Japanese side by side
 - `store.py`: reads/writes `data/state.json` (atomic writes, concurrent-write detection)
-- `data/state.json`: stock, recipes, history, settings
+- `data/state.json`: stock, recipes, history, settings (`data/state.ja.json`: the Japanese demo shop)
 - `tests/simulate_convergence.py`: the coefficient convergence simulation
 
 ## Architecture

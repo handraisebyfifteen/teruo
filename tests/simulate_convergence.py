@@ -140,7 +140,7 @@ def run_scenario(true_coefficient: float, seed: int) -> dict:
         # --- Closing: stock counts (chicken daily, paper every 5 days) ---
         at(day, 21, 0)
         result = call(tools.record_count, "meat_chicken", round(true_stock["meat_chicken"]))
-        if "hit the cap" in result:
+        if tools.hit_cap(result):
             cap_hits += 1
         state = store.load_state()
         chicken = next(i for i in state["items"] if i["id"] == "meat_chicken")

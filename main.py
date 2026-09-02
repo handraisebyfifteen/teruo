@@ -3,6 +3,11 @@
 Python calculates, the AI judges. If the state is empty, the onboarding
 interview runs first. The everyday judgment layer is split into three roles
 (agents.py, instructions step 5.5).
+
+Language: English by default. ``python main.py --lang ja`` (or TERUO_LANG=ja)
+switches the whole product — prompts, tool output, CLI — to Japanese and
+remembers the choice in state.json (config.language), so later launches
+need no flag.
 """
 
 from __future__ import annotations
@@ -13,7 +18,8 @@ import sys
 from strands import Agent
 
 from agents import build_operations_agent
-from store import load_state
+from i18n import DEFAULT_LANGUAGE, get_language, normalize_language, set_language, t
+from store import load_state, save_state
 from tools import (
     delete_product,
     get_capacity,
@@ -50,7 +56,8 @@ COUNSELING_TOOLS = [
     update_config,
 ]
 
-COUNSELING_PROMPT = """You are "teruo", an inventory agent for food trucks and street stalls.
+COUNSELING_PROMPTS = {
+    "en": """You are "teruo", an inventory agent for food trucks and street stalls.
 You are about to run the onboarding interview and register the shop's setup through conversation alone.
 
 ## Ground rules
@@ -138,7 +145,83 @@ numbers as rough. A few stock counts and the accuracy will climb."
 (Say it up front. Said after the numbers drift, it's an excuse.)
 
 Be polite and concise.
-"""
+""",
+    "ja": """あなたは「teruo」。キッチンカー・屋台の在庫管理エージェントです。
+いまから初回カウンセリングを行い、対話だけで店の構成を登録します。
+
+## 進め方の原則
+- 全7段階、合計10分以内。一度に聞くのは1〜2問。完璧を求めない
+- 空欄で止まらない。未指定の量はあなたが屋台の標準的な値で控えめに仮置きし、
+  「◯◯で置いておきます。後で直せます」と伝えて先へ進む
+- 登録はその場で register_item / register_product / update_config を使って行う。
+  途中でやめても登録済みの分は保存されている。「続きはいつでもできます」と伝える
+- 業種名を聞いても内部で決め打ちしない。盛り方・使い方を聞いて判定する
+- IDは英小文字スネークケース（例: meat_chicken）であなたが命名する
+- 数値の計算は必ずツールに任せる
+- ツールの結果が「[画面に表示済み〜]」で始まる場合、内容は既に画面に出ている。繰り返さない
+
+## 段階1 — 店の輪郭
+「どんなものを売っていますか。メニューをひと通り教えてください」
+続けて「量る時の単位はグラムですか。それともオンス・ポンドですか」と聞く。
+答えでこの店の計量系が決まる: メートル法（g / kg / ml）かヤード・ポンド法（oz / lb / fl oz）。
+以後の重量・容量の品目、レシピの量、仮置きの値はすべてその計量系で登録し、2つを混ぜない。
+仮置きの標準値もその計量系に換算する（30g ≈ 1oz）。
+
+## 段階2 — メニューごとの中身
+各商品について「◯◯には何が入りますか」「量が決まっているものはありますか」。
+分かった量はそのまま、未指定は仮置き（例:「キャベツ30g、ソース20gで置いておきます」）。
+品目を register_item で登録してから register_product で商品を登録する。
+店主には順序を意識させない。
+
+## 段階3 — 誤差を聞く（管理方法の判定）
+「盛り付けの量は毎回同じですか。人によって変わりますか」
+- 変わらない（袋から出す・1本渡す）→ 数が合いやすい品目
+- 変わる（トングで盛る）→ 棚卸しで係数を補正していくと説明する
+
+## 段階4 — 見落としを拾う（最重要）
+店主は消耗品を自分からは言わない。「他にありますか」では出てこない。具体的に聞く:
+- 「揚げ物はありますか」→ 油
+- 「持ち帰りの容器は？」→ 容器・袋・ナプキン
+- 「割り箸やスプーンは？」→ カトラリー
+- 「ドリンクは出しますか」→ カップ・氷・ストロー
+- 「ラップ紙や敷き紙は？」→ 紙類
+- 「ビニール袋・レジ袋は？」→ 袋類
+
+## 段階5 — 仕入れの単位と、数える単位
+「◯◯はどう仕入れますか。塊ですか、パックですか」
+塊・箱など消費単位と違う形なら「1本（1箱）だいたい何kg（何lb）ですか」と聞く。
+登録済みの品目には update_item の new_purchase_unit / new_unit_weight で後付けする。
+量は段階1で決めた計量系で入れる（例: g で量る店で1本10kgなら
+new_purchase_unit="本", new_unit_weight=10000）。
+「記録しておきます」と口だけで済ませず、必ずツールで保存する。同じ単位なら聞かない。
+
+続けて「使う時は、何を1として数えますか」と聞く。答えで consumption_type と unit が決まる:
+- 1個ずつ・1本ずつ使う → consumption_type="unit"、unit=個・本
+- 中子・バット1杯を単位に仕込む → consumption_type="unit"、unit=中子
+- 刻んで量る・トングで盛る → consumption_type="weight"、unit=g または oz（段階1の計量系）
+- 袋から出して1枚渡すだけ → consumption_type="count"
+品目名から型を決め打ちしない（同じ玉ねぎでも、個で数える店と中子で数える店がある）。
+ユニット型で登録したら「1◯で何食分もつかは、最初に使い切った時に覚えます。
+使い切ったら教えてください」と伝える。
+
+## 段階6 — 現在庫
+「今あるだいたいの量を教えてください。ざっくりで大丈夫です」
+正確さを求めない。求めると店主が始められない。後の棚卸しで直る。
+
+## 段階7 — 合言葉と通知先
+「レシピや単位を変える時だけ使う合言葉を決めてください。日々の入力には要りません。
+スタッフの方が誤って設定を変えてしまうのを防ぐためです」
+「設定が変わった時にお知らせするメールアドレスも教えてください」
+→ update_config で保存する。
+
+## 最後に必ず伝える
+「最初の1〜2週間は、こちらが数え方を覚える期間です。数字は参考程度に見てください。
+何度か棚卸しをしていただければ、精度が上がっていきます」
+（先に言っておく。数字がズレてから言うと言い訳になる）
+
+言葉遣いは丁寧語で、簡潔に。
+""",
+}
 
 REQUIRED_ENVIRONMENT = (
     "AWS_ACCESS_KEY_ID",
@@ -147,14 +230,52 @@ REQUIRED_ENVIRONMENT = (
 )
 
 
+def _language_flag(argv: list[str]) -> str | None:
+    """Pull ``--lang ja`` / ``--lang=ja`` out of argv (raw, unvalidated)."""
+    for index, arg in enumerate(argv):
+        if arg == "--lang" and index + 1 < len(argv):
+            return argv[index + 1]
+        if arg.startswith("--lang="):
+            return arg.split("=", 1)[1]
+    return None
+
+
+def _remember_language(language: str) -> None:
+    """Persist an explicit choice so the next launch needs no flag."""
+    try:
+        state = load_state()
+    except FileNotFoundError:
+        return
+    config = state.get("config") or {}
+    if config.get("language") == language:
+        return
+    config["language"] = language
+    state["config"] = config
+    save_state(state)
+
+
+def resolve_language(argv: list[str]) -> str:
+    """--lang flag > TERUO_LANG > config.language in state.json > English."""
+    requested = _language_flag(argv) or os.environ.get("TERUO_LANG")
+    if requested:
+        language = normalize_language(requested)
+        if language is None:
+            print(t("cli_bad_language", value=requested), file=sys.stderr)
+            raise SystemExit(1)
+        set_language(language)
+        _remember_language(language)
+        return language
+    try:
+        stored = (load_state().get("config") or {}).get("language")
+    except FileNotFoundError:
+        stored = None
+    return set_language(normalize_language(stored) or DEFAULT_LANGUAGE)
+
+
 def validate_environment() -> None:
     missing = [name for name in REQUIRED_ENVIRONMENT if not os.environ.get(name)]
     if missing:
-        print(
-            "Missing required Replit Secrets / environment variables: "
-            + ", ".join(missing),
-            file=sys.stderr,
-        )
+        print(t("cli_missing_env", names=", ".join(missing)), file=sys.stderr)
         raise SystemExit(1)
 
 
@@ -168,23 +289,23 @@ def needs_counseling() -> bool:
 
 
 def main() -> None:
+    resolve_language(sys.argv[1:])
     validate_environment()
     counseling = "--setup" in sys.argv[1:] or needs_counseling()
     if counseling:
-        agent = Agent(system_prompt=COUNSELING_PROMPT, tools=COUNSELING_TOOLS)
+        agent = Agent(
+            system_prompt=COUNSELING_PROMPTS[get_language()], tools=COUNSELING_TOOLS
+        )
     else:
         agent = build_operations_agent()
     if counseling:
-        print(
-            "teruo — starting the onboarding interview "
-            "(about 10 minutes; progress is saved if you stop midway)."
-        )
+        print(t("cli_counseling_start"))
         try:
-            agent("Begin the onboarding interview. Ask your first question.")
+            agent(t("cli_counseling_kickoff"))
         except Exception as error:
-            print(f"Something went wrong: {error}", file=sys.stderr)
+            print(t("cli_error", error=error), file=sys.stderr)
     else:
-        print("teruo — inventory agent. Type exit to quit.")
+        print(t("cli_welcome"))
     while True:
         try:
             user_input = input("\n> ").strip()
@@ -198,7 +319,7 @@ def main() -> None:
         try:
             agent(user_input)
         except Exception as error:
-            print(f"Something went wrong: {error}", file=sys.stderr)
+            print(t("cli_error", error=error), file=sys.stderr)
 
 
 if __name__ == "__main__":

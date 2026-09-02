@@ -65,5 +65,6 @@ tests/sim_state.json
 
 # Demo shooting artifacts (regenerable / backups)
 data/state.demo-month.json
+data/state.demo-month.*.json
 data/state.original.json
 data/state.after*.json

@@ -4,13 +4,17 @@ A Python CLI that manages stock and consumption coefficients from a kebab
 stall's sales and stock counts. Coefficient logic branches three ways by
 consumption type (count / weight / unit).
 The name comes from the English "tell" (always written lowercase `teruo`).
-The entire product (UI, prompts, docs) is in English; README.ja.md keeps
-the Japanese README.
+The product speaks English by default and Japanese with `--lang ja`
+(prompts, tool output, CLI); the choice is stored in state.json as
+config.language. README.ja.md is the Japanese README; the design docs are
+Japanese with English translations in docs/*.en.md.
 
 ## Run & Operate
 
 - `python main.py` — start the interactive CLI (onboarding runs if state is empty)
 - `python main.py --setup` — force the onboarding interview
+- `python main.py --lang ja` — switch to Japanese (remembered; `TERUO_LANG=ja` also works)
+- `INVENTORY_STATE_PATH=data/state.ja.json python main.py` — the Japanese demo shop
 - Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
   `AWS_DEFAULT_REGION` (`us-east-2`)
 
@@ -26,10 +30,11 @@ the Japanese README.
 - CLI loop and counseling agent: `main.py`
 - Operations agents (reporter / record keeper / observer, agents-as-tools): `agents.py`
 - Tool calculations: `tools.py`
+- Every user-facing string, English and Japanese side by side: `i18n.py` (`t("key")`)
 - Atomic JSON persistence: `store.py`
-- State: `data/state.json`
+- State: `data/state.json` (`data/state.ja.json`: same shop, Japanese names/counters)
 - Convergence simulation: `tests/simulate_convergence.py`
-- Scope: `docs/teruo-design.md` (design doc B, authoritative), `docs/teruo-instructions.md` (implementation instructions; both in Japanese)
+- Scope: `docs/teruo-design.md` (design doc B, authoritative), `docs/teruo-instructions.md` (implementation instructions; both in Japanese, English translations as `*.en.md`)
 
 ## Architecture decisions
 
@@ -56,6 +61,11 @@ the Japanese README.
 - Structure changes (recipes, units, item registry, config) require the shared
   passphrase stored in `state.json`; daily inputs (sales, counts, purchases) do not.
 - Items are never deleted, only `active: false`. History and settings_log are append-only.
+- All owner-facing text goes through `i18n.t()`; code never branches on a
+  label's wording (learning phase is returned as a code by `tools._growth`).
+  Tool docstrings stay English — the model reads them, the owner doesn't.
+  Japanese counters (枚/本/個) are valid count units; `_amount` never
+  pluralizes or spaces non-ASCII units.
 
 ## User preferences
 

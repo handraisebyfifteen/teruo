@@ -2,7 +2,8 @@
 
 All arithmetic happens here (Python); the AI never does mental math.
 Structure-changing tools verify the passphrase and log before/after
-values to settings_log.
+values to settings_log. Every string the owner sees comes from i18n.py
+(``t("key")``), so the same code speaks English or Japanese.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from zoneinfo import ZoneInfo
 
 from strands import tool
 
+from i18n import t
 from store import STATE_LOCK, StateConflictError, load_state, save_state
 
 
@@ -41,12 +43,8 @@ UNIT_TYPES = ("weight", "volume", "count")
 # The three consumption types (design doc §2). This is the counting axis,
 # separate from unit_type (the kind of unit).
 CONSUMPTION_TYPES = ("count", "weight", "unit")
-CONFLICT_MESSAGE = "Someone else seems to have entered data first. Please try again."
-PASSPHRASE_MESSAGE = (
-    "The passphrase is incorrect. Changing recipes, units, or other settings "
-    "requires the passphrase."
-)
-NEGATIVE_STOCK_DISPLAY = "recount needed (the book value went negative)"
+# Conflict / passphrase / negative-stock wording: see i18n.py
+# (t("conflict"), t("passphrase_wrong"), t("negative_stock")).
 
 # Conversion tables within the same unit kind (multiplier per base unit).
 # Never convert across kinds. Metric and imperial both live here — which
@@ -56,6 +54,8 @@ VOLUME_UNITS = {"ml": 1.0, "mL": 1.0, "l": 1000.0, "L": 1000.0, "fl oz": 29.5735
 COUNT_UNITS = (
     "pc", "sheet", "bottle", "bag", "can", "box",
     "serving", "cup", "roll", "tub", "piece", "cone",
+    # Japanese counters — a shop registers whichever it actually counts in
+    "枚", "本", "個", "袋", "缶", "箱", "食", "杯", "巻", "中子",
 )
 
 ITEM_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -109,7 +109,7 @@ def _display_number(value: float) -> str:
 
 
 def _plural(unit: str, value: float) -> str:
-    if abs(value) == 1:
+    if abs(value) == 1 or not unit.isascii():
         return unit
     if unit.endswith(("s", "x", "ch", "sh")):
         return unit + "es"
@@ -117,10 +117,16 @@ def _plural(unit: str, value: float) -> str:
 
 
 def _amount(value: float, unit: str) -> str:
-    """Format a quantity with its unit: '300g' for measures, '3 bottles' for counts."""
-    if unit in WEIGHT_UNITS or unit in VOLUME_UNITS:
+    """Format a quantity with its unit: '300g' for measures, '3 bottles' for
+    counts. Japanese counters neither pluralize nor take a space: '3本'."""
+    if unit in WEIGHT_UNITS or unit in VOLUME_UNITS or not unit.isascii():
         return f"{_display_number(value)}{unit}"
     return f"{_display_number(value)} {_plural(unit, value)}"
+
+
+def _join(names) -> str:
+    """Join display names with the language's list separator (', ' or '、')."""
+    return t("list_sep").join(names)
 
 
 def _bound_per_serving(unit: str) -> float:
@@ -144,17 +150,21 @@ def _display_bound(value: float) -> str:
 # seed_demo.py and friends set this to False to silence it.
 DIRECT_OUTPUT = True
 
-TOLD_MARKER = (
-    "[Already shown on screen. Do not repeat the content; "
-    "add only a brief judgment or next step]"
-)
+def told_marker() -> str:
+    """The tag telling the LLM a tool result is already on screen (per language)."""
+    return t("told_marker")
+
+
+def hit_cap(result: str) -> bool:
+    """Whether a record_count result carries the coefficient-cap warning."""
+    return t("cap_hit_fragment") in result
 
 
 def _tell(text: str) -> str:
     """Print the final output directly to stdout and tag it so the LLM won't echo it."""
     if DIRECT_OUTPUT:
         print(text, flush=True)
-        return f"{TOLD_MARKER}\n{text}"
+        return f"{told_marker()}\n{text}"
     return text
 
 
@@ -176,7 +186,7 @@ def _display_stock(item: dict[str, Any]) -> str:
     number itself is never shown (design doc, principle 10)."""
     stock = float(item["stock"])
     if stock < 0:
-        return NEGATIVE_STOCK_DISPLAY
+        return t("negative_stock")
     return _amount(stock, item["unit"])
 
 
@@ -188,7 +198,7 @@ def _check_passphrase(state: dict[str, Any], passphrase: str) -> str | None:
         return None
     if passphrase == stored:
         return None
-    return PASSPHRASE_MESSAGE
+    return t("passphrase_wrong")
 
 
 def _log_setting(
@@ -241,9 +251,11 @@ def _growth_counts(item: dict[str, Any]) -> list[dict[str, Any]]:
     return counts
 
 
-def _growth_label(item: dict[str, Any]) -> str:
-    """Learning-phase label (design doc, principle 9).
+def _growth(item: dict[str, Any]) -> tuple[str, str]:
+    """Learning phase as (code, label) (design doc, principle 9).
 
+    Codes: fixed / unlearned / learning / stable / insufficient / unsettled.
+    Callers branch on the code, never on the label's wording.
     "learning" is cut off unconditionally after 5 stock counts or 14 days,
     and never said again. If the coefficient hasn't settled, return the fact
     (recent coefficient movement) and leave interpretation to the AI.
@@ -251,40 +263,44 @@ def _growth_label(item: dict[str, Any]) -> str:
     """
     ctype = _consumption_type(item)
     if ctype == "count":
-        return "coefficient fixed"
+        return "fixed", t("growth_fixed")
     if ctype == "unit":
         n = len(item.get("unit_history", []))
         if n == 0:
-            return "unlearned (waiting for the first empty unit)"
+            return "unlearned", t("growth_unlearned")
         if n < UNIT_LEARNING_SAMPLES:
-            return f"learning ({n}/{UNIT_LEARNING_SAMPLES} empty units)"
-        return f"stable ({n} records)"
+            return "learning", t("growth_learning_unit", n=n, max=UNIT_LEARNING_SAMPLES)
+        return "stable", t("growth_stable_unit", n=n)
     counts = _growth_counts(item)
     n = len(counts)
     if n == 0:
-        return f"learning (0/{LEARNING_MAX_COUNTS} stock counts)"
+        return "learning", t("growth_learning", n=0, max=LEARNING_MAX_COUNTS)
     days = (_now() - _parse_iso(counts[0]["recorded_at"])).days
     if n < LEARNING_MAX_COUNTS and days < LEARNING_MAX_DAYS:
-        return f"learning (stock count {n}/{LEARNING_MAX_COUNTS})"
+        return "learning", t("growth_learning", n=n, max=LEARNING_MAX_COUNTS)
     if n < 2:
-        return "not enough stock counts"
+        return "insufficient", t("growth_insufficient")
     delta = abs(
         float(counts[-1]["coefficient_after"]) - float(counts[-2]["coefficient_after"])
     )
     if delta <= STABLE_COEFFICIENT_BAND:
-        return "stable"
-    return (
-        "coefficient not settling (last "
-        f'{float(counts[-2]["coefficient_after"]):.2f} → '
-        f'{float(counts[-1]["coefficient_after"]):.2f})'
+        return "stable", t("growth_stable")
+    return "unsettled", t(
+        "growth_unsettled",
+        before=float(counts[-2]["coefficient_after"]),
+        after=float(counts[-1]["coefficient_after"]),
     )
+
+
+def _growth_label(item: dict[str, Any]) -> str:
+    return _growth(item)[1]
 
 
 def _save(state: dict[str, Any]) -> str | None:
     try:
         save_state(state)
     except StateConflictError:
-        return CONFLICT_MESSAGE
+        return t("conflict")
     return None
 
 
@@ -312,14 +328,14 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
             Defaults to "solo".
     """
     if quantity < 0:
-        return "Quantity must be zero or more."
+        return t("qty_nonnegative")
     if venue_type not in VENUE_TYPES:
-        return 'venue_type must be "event" or "solo".'
+        return t("venue_invalid")
 
     state = load_state()
     product = _find(state["products"], product_id)
     if product is None:
-        return f'Product ID "{product_id}" was not found.'
+        return t("product_not_found", product_id=product_id)
 
     changes: list[str] = []
     notes: list[str] = []
@@ -339,19 +355,25 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
             used_note = ""
             if opened_at is not None:
                 used = int(round(float(item["sales_count"]) - float(opened_at)))
-                used_note = f'; the open {item["unit"]} is at serving {used}'
+                used_note = t("sales_open_note", unit=item["unit"], used=used)
             changes.append(
-                f'{item["name"]}: stock unchanged '
-                f'(running total {_display_number(float(item["sales_count"]))} '
-                f'servings{used_note})'
+                t(
+                    "sales_unit_unchanged",
+                    name=item["name"],
+                    total=_display_number(float(item["sales_count"])),
+                    used_note=used_note,
+                )
             )
             if coefficient and opened_at is not None:
                 remaining = float(coefficient) - used
                 if remaining <= max(5.0, float(coefficient) * 0.1):
                     notes.append(
-                        f'{item["name"]}: the open {item["unit"]} should run out soon '
-                        f'(about {max(0, int(remaining))} servings left). '
-                        "Tell me when it's empty."
+                        t(
+                            "sales_unit_running_out",
+                            name=item["name"],
+                            unit=item["unit"],
+                            remaining=max(0, int(remaining)),
+                        )
                     )
             continue
 
@@ -363,17 +385,18 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
         if after < 0 <= before:
             # Keep the negative value, never show the number (principle 10).
             # Don't stop with an error either.
-            changes.append(
-                f'{item["name"]}: the book value ran below zero. There should still '
-                "be some left — my estimate ran low. Please measure it at closing."
-            )
+            changes.append(t("sales_went_negative", name=item["name"]))
         elif after < 0:
-            changes.append(f'{item["name"]}: {NEGATIVE_STOCK_DISPLAY}')
+            changes.append(f'{item["name"]}: {t("negative_stock")}')
         else:
             changes.append(
-                f'{item["name"]}: {_display_number(before)} → '
-                f'{_amount(after, item["unit"])} '
-                f'(down {_amount(consumed, item["unit"])})'
+                t(
+                    "sales_decrease",
+                    name=item["name"],
+                    before=_display_number(before),
+                    after=_amount(after, item["unit"]),
+                    consumed=_amount(consumed, item["unit"]),
+                )
             )
 
     state["history"].append(
@@ -386,7 +409,7 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
     )
     if conflict := _save(state):
         return conflict
-    lines = [f'Recorded {product["name"]} × {quantity}.']
+    lines = [t("sales_recorded", product=product["name"], quantity=quantity)]
     lines.extend(f"- {change}" for change in changes)
     lines.extend(notes)
     return _tell("\n".join(lines))
@@ -408,12 +431,12 @@ def record_count(item_id: str, actual_stock: float) -> str:
             For unit items, count an opened unit as 1.
     """
     if actual_stock < 0:
-        return "Counted stock must be zero or more."
+        return t("count_nonnegative")
 
     state = load_state()
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return f'Item ID "{item_id}" was not found.'
+        return t("item_not_found", item_id=item_id)
 
     ctype = _consumption_type(item)
     counted_at = _now_iso()
@@ -424,29 +447,23 @@ def record_count(item_id: str, actual_stock: float) -> str:
     warning = ""
     message: str
     if ctype == "unit":
-        message = (
-            f'Recounted {item["name"]} units. '
-            f'Servings per {item["unit"]} is settled by empty-unit records.'
-        )
+        message = t("count_unit_recounted", name=item["name"], unit=item["unit"])
     elif ctype == "count":
         difference = _round_one(calculated_stock - actual_stock)
         if difference == 0:
-            message = f'{item["name"]} matches the book value.'
+            message = t("count_matches", name=item["name"])
         else:
             # A gap in a count-tracked item can't be explained by a coefficient.
             # State the fact only (principle 12).
-            direction = "fewer" if difference > 0 else "more"
-            message = (
-                f'{item["name"]} counted '
-                f'{_amount(abs(difference), item["unit"])} {direction} than the book '
-                "value. This item is tracked by count, so please check for "
-                "unlogged sales or waste."
+            direction = t("fewer") if difference > 0 else t("more")
+            message = t(
+                "count_gap",
+                name=item["name"],
+                diff=_amount(abs(difference), item["unit"]),
+                direction=direction,
             )
     elif last_counted is None:
-        message = (
-            f'{item["name"]}: first stock count, so the coefficient stays at '
-            f"{previous_coefficient:.2f}."
-        )
+        message = t("count_first", name=item["name"], coef=previous_coefficient)
     else:
         last_counted_at = _parse_iso(last_counted)
         theoretical_consumption = 0.0
@@ -500,29 +517,22 @@ def record_count(item_id: str, actual_stock: float) -> str:
             upper = (base_per_serving + bound) / base_per_serving
             clamped = min(upper, max(lower, new_coefficient))
             item["coefficient"] = round(clamped, 4)
-            message = (
-                f'Updated the coefficient for {item["name"]} from '
-                f'{previous_coefficient:.2f} to {item["coefficient"]:.2f}.'
+            message = t(
+                "count_coef_updated",
+                name=item["name"],
+                before=previous_coefficient,
+                after=item["coefficient"],
             )
             if clamped != new_coefficient:
-                warning = (
-                    " The coefficient has hit the cap of what portioning variance "
-                    f"can explain (recipe value ±"
-                    f'{_display_bound(bound)}{item["unit"]}'
-                    "/serving). I won't adjust it any further on my own. "
-                    "The recipe itself may need a review."
+                warning = t(
+                    "count_cap_hit", bound=_display_bound(bound), unit=item["unit"]
                 )
             elif abs(clamped - previous_coefficient) > 0.15:
-                warning = (
-                    " That is a big jump. Please double-check the count as well."
-                )
+                warning = t("count_big_jump")
         else:
-            message = (
-                f'{item["name"]} has no sales since the last count, so the '
-                f"coefficient stays at {previous_coefficient:.2f}."
-            )
+            message = t("count_no_sales", name=item["name"], coef=previous_coefficient)
 
-    label_before = _growth_label(item)
+    phase_before = _growth(item)[0]
     item["stock"] = _round_one(actual_stock)
     item["last_counted"] = counted_at
     item.setdefault("count_history", []).append(
@@ -534,9 +544,9 @@ def record_count(item_id: str, actual_stock: float) -> str:
             "coefficient_after": float(item.get("coefficient") or 1.0),
         }
     )
-    growth = _growth_label(item)
+    phase, growth = _growth(item)
     growth_note = ""
-    if ctype == "weight" and label_before.startswith("learning") and not growth.startswith("learning"):
+    if ctype == "weight" and phase_before == "learning" and phase != "learning":
         # When learning ends, always show the gap between the initial and the
         # settled value. Never finalize silently (design doc §2).
         recipe_values = [
@@ -549,22 +559,26 @@ def record_count(item_id: str, actual_stock: float) -> str:
             base = sum(recipe_values) / len(recipe_values)
             final = base * float(item["coefficient"])
             percent = (final - base) / base * 100
-            growth_note = (
-                f' Learning is complete. {item["name"]}: '
-                f'{_amount(_round_one(base), item["unit"])} → '
-                f'{_amount(_round_one(final), item["unit"])} per serving '
-                f"({percent:+.0f}%). Please confirm this range is acceptable."
+            growth_note = t(
+                "count_learning_done",
+                name=item["name"],
+                base=_amount(_round_one(base), item["unit"]),
+                final=_amount(_round_one(final), item["unit"]),
+                percent=percent,
             )
-    elif growth.startswith("learning"):
-        growth_note = f" Still {growth} — treat the numbers as rough for now."
-    elif growth.startswith("coefficient not settling"):
-        growth_note = f" Note: {growth}."
+    elif phase == "learning":
+        growth_note = t("count_still_learning", growth=growth)
+    elif phase == "unsettled":
+        growth_note = t("count_unsettled_note", growth=growth)
     if conflict := _save(state):
         return conflict
     return _tell(
-        (
-            f"{message} Stock updated to "
-            f'{_amount(float(item["stock"]), item["unit"])}.{warning}{growth_note}'
+        t(
+            "count_stock_updated",
+            message=message,
+            stock=_amount(float(item["stock"]), item["unit"]),
+            warning=warning,
+            growth_note=growth_note,
         ).rstrip()
     )
 
@@ -587,12 +601,9 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
     state = load_state()
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return f'Item ID "{item_id}" was not found.'
+        return t("item_not_found", item_id=item_id)
     if _consumption_type(item) != "unit":
-        return (
-            f'{item["name"]} is not a unit-tracked item. '
-            "Use record_count for stock counts."
-        )
+        return t("unit_not_unit_type", name=item["name"])
 
     unit = item["unit"]
     sales_count = float(item.get("sales_count", 0))
@@ -602,30 +613,24 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
         item["opened_at_sales_count"] = sales_count
         if conflict := _save(state):
             return conflict
-        return _tell(
-            f'Recorded that a {unit} of {item["name"]} was opened. Tell me when '
-            f"it's empty — that will settle how many servings one {unit} holds."
-        )
+        return _tell(t("unit_opened", name=item["name"], unit=unit))
 
     servings = int(round(sales_count - float(opened_at)))
     history = item.setdefault("unit_history", [])
     anomaly = ""
     if servings <= 0:
-        anomaly = (
-            f"No sales were recorded since it was opened, so this {unit} won't "
-            "count toward the coefficient. Please check for missed sales entries."
-        )
+        anomaly = t("unit_no_sales", unit=unit)
     elif len(history) >= UNIT_BOUND_MIN_SAMPLES:
         # Cap check: ±20% of past records (design doc §2). An out-of-band
         # value is kept as a fact but not learned from.
         average = sum(history) / len(history)
         if abs(servings - average) > UNIT_BOUND_RATIO * average:
-            anomaly = (
-                f"{servings} servings from one {unit} is more than "
-                f"±{int(UNIT_BOUND_RATIO * 100)}% off the past average "
-                f"({average:.0f} servings). Not counting it toward the "
-                "coefficient. It may have been used for something else, or a "
-                "sale or empty-unit record may be missing."
+            anomaly = t(
+                "unit_out_of_band",
+                servings=servings,
+                unit=unit,
+                pct=int(UNIT_BOUND_RATIO * 100),
+                average=average,
             )
     if not anomaly:
         history.append(servings)
@@ -649,17 +654,26 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
 
     stock_display = _display_stock(item)
     if anomaly:
-        return _tell(f'{item["name"]}: {anomaly} {stock_display} left.')
+        return _tell(
+            t("unit_anomaly_result", name=item["name"], anomaly=anomaly, stock=stock_display)
+        )
     coefficient = float(item["coefficient"])
     capacity_note = (
-        f" (about {int(max(0.0, float(item['stock'])) * coefficient)} servings left)"
+        t("unit_capacity_note", servings=int(max(0.0, float(item["stock"])) * coefficient))
         if float(item["stock"]) >= 0
         else ""
     )
     return _tell(
-        f'{item["name"]}: {servings} servings from that {unit}. '
-        f"{len(history)} records → ≈{coefficient:.0f} servings per {unit}. "
-        f"{stock_display} left{capacity_note}."
+        t(
+            "unit_used_result",
+            name=item["name"],
+            servings=servings,
+            unit=unit,
+            count=len(history),
+            coef=coefficient,
+            stock=stock_display,
+            capacity_note=capacity_note,
+        )
     )
 
 
@@ -682,7 +696,7 @@ def record_purchase(purchases: list[dict]) -> str:
                 Without amount, the stock is estimated as units × unit_weight.
     """
     if not purchases:
-        return "The purchase list is empty."
+        return t("purchase_empty")
 
     state = load_state()
     lines: list[str] = []
@@ -690,17 +704,14 @@ def record_purchase(purchases: list[dict]) -> str:
         item_id = entry.get("item_id")
         item = _find(state["items"], item_id) if item_id else None
         if item is None or not item.get("active", True):
-            return (
-                f'Item ID "{item_id}" was not found. '
-                "Register it first with register_item."
-            )
+            return t("purchase_item_not_found", item_id=item_id)
 
         amount = entry.get("amount")
         units = entry.get("units")
         estimated = False
         if amount is None:
             if units is None:
-                return f'{item["name"]}: needs either amount or units.'
+                return t("purchase_needs_amount_or_units", name=item["name"])
             unit_weight = item.get("unit_weight")
             if unit_weight:
                 # A distinct purchase unit exists (1 cone = 10kg, 1 bag = 10
@@ -710,14 +721,14 @@ def record_purchase(purchases: list[dict]) -> str:
             elif item.get("unit_type") == "count":
                 amount = float(units)
             else:
-                return (
-                    f'{item["name"]}: no estimated amount per '
-                    f'{item.get("purchase_unit", "purchase unit")} is set, '
-                    "so please provide the actual amount."
+                return t(
+                    "purchase_no_unit_weight",
+                    name=item["name"],
+                    purchase_unit=item.get("purchase_unit") or t("purchase_unit_fallback"),
                 )
         amount = float(amount)
         if amount < 0:
-            return f'{item["name"]}: purchase amount must be zero or more.'
+            return t("purchase_nonnegative", name=item["name"])
 
         before = float(item["stock"])
         after = _round_one(before + amount)
@@ -745,20 +756,21 @@ def record_purchase(purchases: list[dict]) -> str:
                 "estimated": estimated,
             }
         )
-        note = (
-            " (rough estimate — tell me the actual amount if you learn it)"
-            if estimated
-            else ""
-        )
+        note = t("purchase_estimated_note") if estimated else ""
         lines.append(
-            f'{item["name"]} +{_amount(amount, item["unit"])} '
-            f'({_display_number(before)} → '
-            f'{_amount(after, item["unit"])}){note}'
+            t(
+                "purchase_line",
+                name=item["name"],
+                amount=_amount(amount, item["unit"]),
+                before=_display_number(before),
+                after=_amount(after, item["unit"]),
+                note=note,
+            )
         )
 
     if conflict := _save(state):
         return conflict
-    return "Recorded the purchases.\n" + "\n".join(lines)
+    return t("purchase_recorded") + "\n" + "\n".join(lines)
 
 
 @tool
@@ -777,39 +789,55 @@ def get_stock_status() -> str:
             continue
         ctype = _consumption_type(item)
         last_counted = item.get("last_counted")
-        last_display = _fmt_dt(last_counted) if last_counted else "never"
+        last_display = _fmt_dt(last_counted) if last_counted else t("never_counted")
         if ctype == "unit":
             coefficient = item.get("coefficient")
             coef_display = (
-                f'≈{float(coefficient):.0f} servings per {item["unit"]}'
+                t("status_coef_unit", coef=float(coefficient), unit=item["unit"])
                 if coefficient
-                else "unlearned"
+                else t("status_unlearned")
             )
             opened_at = item.get("opened_at_sales_count")
             opened_note = ""
             if opened_at is not None:
                 used = int(round(float(item.get("sales_count", 0)) - float(opened_at)))
-                opened_note = f', open {item["unit"]} at serving {used}'
+                opened_note = t("status_open_note", unit=item["unit"], used=used)
             lines.append(
-                f'- {item["name"]}: {_display_stock(item)}, {coef_display}, '
-                f"{_growth_label(item)}{opened_note}, last counted {last_display}"
+                t(
+                    "status_line_unit",
+                    name=item["name"],
+                    stock=_display_stock(item),
+                    coef=coef_display,
+                    growth=_growth_label(item),
+                    opened_note=opened_note,
+                    last=last_display,
+                )
             )
         elif ctype == "count":
             lines.append(
-                f'- {item["name"]}: {_display_stock(item)}, coefficient fixed, '
-                f"last counted {last_display}"
+                t(
+                    "status_line_count",
+                    name=item["name"],
+                    stock=_display_stock(item),
+                    last=last_display,
+                )
             )
         else:
             lines.append(
-                f'- {item["name"]}: {_display_stock(item)}, '
-                f'coefficient {float(item["coefficient"]):.2f}, '
-                f"{_growth_label(item)}, last counted {last_display}"
+                t(
+                    "status_line_weight",
+                    name=item["name"],
+                    stock=_display_stock(item),
+                    coef=float(item["coefficient"]),
+                    growth=_growth_label(item),
+                    last=last_display,
+                )
             )
 
     settings_log = state.get("settings_log", [])
     if settings_log:
         lines.append("")
-        lines.append("Recent settings changes:")
+        lines.append(t("status_recent_changes"))
         for entry in settings_log[-5:]:
             lines.append(f'- {_fmt_dt(entry["changed_at"])} {entry["summary"]}')
     return _tell("\n".join(lines))
@@ -831,9 +859,9 @@ def get_sales_summary() -> str:
         if entry.get("product_id") is not None and entry.get("recorded_at")
     ]
     if not sales:
-        return "No sales records yet."
+        return t("sales_none")
 
-    venue_names = {"event": "Event days", "solo": "Solo days"}
+    venue_names = {"event": t("venue_event"), "solo": t("venue_solo")}
     blocks: list[str] = []
     for venue in VENUE_TYPES:
         venue_sales = [s for s in sales if s.get("venue_type", "solo") == venue]
@@ -845,14 +873,18 @@ def get_sales_summary() -> str:
             totals[sale["product_id"]] = totals.get(sale["product_id"], 0.0) + float(
                 sale["quantity"]
             )
-        lines = [f"{venue_names[venue]} ({len(days)} business days):"]
+        lines = [t("sales_block_header", venue=venue_names[venue], days=len(days))]
         for product_id, total in totals.items():
             product = _find(state["products"], product_id)
             name = product["name"] if product else product_id
             average = _round_one(total / len(days))
             lines.append(
-                f"- {name}: {_display_number(total)} total, "
-                f"{_display_number(average)}/day average"
+                t(
+                    "sales_product_line",
+                    name=name,
+                    total=_display_number(total),
+                    average=_display_number(average),
+                )
             )
         blocks.append("\n".join(lines))
     return "\n\n".join(blocks)
@@ -869,7 +901,7 @@ def get_capacity() -> str:
     """
     state = load_state()
     if not state["products"]:
-        return "No products registered."
+        return t("capacity_no_products")
     lines: list[str] = []
     for product in state["products"]:
         servings: float | None = None
@@ -907,29 +939,30 @@ def get_capacity() -> str:
                 servings = possible
                 bottleneck = item["name"]
         unlearned_note = (
-            f' (excluding {", ".join(unlearned)} — still unlearned)'
-            if unlearned
-            else ""
+            t("capacity_unlearned_note", names=_join(unlearned)) if unlearned else ""
         )
         if missing:
-            lines.append(
-                f'- {product["name"]}: cannot compute '
-                f'(item "{missing}" is unregistered or inactive)'
-            )
+            lines.append(t("capacity_missing", product=product["name"], missing=missing))
         elif servings is None:
-            lines.append(
-                f'- {product["name"]}: no items available to compute a remaining '
-                f"count{unlearned_note}"
-            )
+            lines.append(t("capacity_none", product=product["name"], note=unlearned_note))
         elif servings < 0:
             lines.append(
-                f'- {product["name"]}: the book value for {bottleneck} ran below '
-                f"zero. A recount is needed{unlearned_note}"
+                t(
+                    "capacity_negative",
+                    product=product["name"],
+                    bottleneck=bottleneck,
+                    note=unlearned_note,
+                )
             )
         else:
             lines.append(
-                f'- {product["name"]}: {int(servings)} servings left '
-                f"(bottleneck: {bottleneck}){unlearned_note}"
+                t(
+                    "capacity_line",
+                    product=product["name"],
+                    servings=int(servings),
+                    bottleneck=bottleneck,
+                    note=unlearned_note,
+                )
             )
     return "\n".join(lines)
 
@@ -951,7 +984,7 @@ def get_monthly_reconciliation(month: str = "") -> str:
     """
     if month:
         if not re.match(r"^\d{4}-\d{2}$", month):
-            return "month must be in YYYY-MM format, e.g. 2026-09."
+            return t("month_format")
     else:
         month = _now().strftime("%Y-%m")
 
@@ -1015,37 +1048,46 @@ def get_monthly_reconciliation(month: str = "") -> str:
         if gap == 0 or abs(gap) <= allowance:
             continue
         unit = item["unit"]
-        period = f'{_fmt_dt(first["recorded_at"])} – {_fmt_dt(last["recorded_at"])}'
-        direction = "short" if gap > 0 else "over"
+        period = t(
+            "period_range",
+            start=_fmt_dt(first["recorded_at"]),
+            end=_fmt_dt(last["recorded_at"]),
+        )
+        direction = t("short") if gap > 0 else t("over")
         if ctype == "weight":
             findings.append(
-                f'- {item["name"]}: {period}: purchased '
-                f"{_amount(purchased, unit)}, recipe-basis consumption "
-                f"{_amount(_round_one(recipe_consumption), unit)} "
-                f"({_display_number(servings)} servings sold). The gap vs. the "
-                f"physical count, {_amount(abs(gap), unit)} ({direction}), is more "
-                "than portioning variance can explain "
-                f"(±{_display_bound(bound)}{unit}/serving = "
-                f"{_amount(allowance, unit)}). Please check for missed purchase "
-                "or sales records"
+                t(
+                    "recon_weight_finding",
+                    name=item["name"],
+                    period=period,
+                    purchased=_amount(purchased, unit),
+                    consumption=_amount(_round_one(recipe_consumption), unit),
+                    servings=_display_number(servings),
+                    gap=_amount(abs(gap), unit),
+                    direction=direction,
+                    bound=_display_bound(bound),
+                    unit=unit,
+                    allowance=_amount(allowance, unit),
+                )
             )
         else:
             findings.append(
-                f'- {item["name"]}: gap vs. the physical count over {period}: '
-                f"{_amount(abs(gap), unit)} ({direction}). This item is tracked "
-                "by count, so please check for unlogged waste or missed records"
+                t(
+                    "recon_count_finding",
+                    name=item["name"],
+                    period=period,
+                    gap=_amount(abs(gap), unit),
+                    direction=direction,
+                )
             )
 
-    lines = [f"Monthly reconciliation for {month}:"]
+    lines = [t("recon_header", month=month)]
     if findings:
         lines.extend(findings)
     else:
-        lines.append("No unexplained gaps.")
+        lines.append(t("recon_no_gaps"))
     if uncheckable:
-        lines.append(
-            "Items with fewer than two stock counts (cannot reconcile): "
-            + ", ".join(uncheckable)
-        )
+        lines.append(t("recon_uncheckable", names=_join(uncheckable)))
     return _tell("\n".join(lines))
 
 
@@ -1098,17 +1140,15 @@ def register_item(
     if error := _check_passphrase(state, passphrase):
         return error
     if not ITEM_ID_PATTERN.match(item_id):
-        return (
-            "item_id must be lowercase letters and underscores, e.g. sauce_yogurt."
-        )
+        return t("item_id_format")
     if _find(state["items"], item_id) is not None:
-        return f'Item ID "{item_id}" already exists. Use a different ID.'
+        return t("item_exists", item_id=item_id)
     if unit_type not in UNIT_TYPES:
-        return 'unit_type must be one of "weight" / "volume" / "count".'
+        return t("unit_type_invalid")
     if consumption_type and consumption_type not in CONSUMPTION_TYPES:
-        return 'consumption_type must be one of "count" / "weight" / "unit".'
+        return t("consumption_type_invalid")
     if stock < 0:
-        return "Stock must be zero or more."
+        return t("stock_nonnegative")
 
     if not consumption_type:
         consumption_type = "count" if unit_type == "count" else "weight"
@@ -1138,25 +1178,18 @@ def register_item(
     _log_setting(
         state,
         "register_item",
-        f"Added item: {name} ({_amount(float(stock), unit)})",
+        t("log_item_added", name=name, stock=_amount(float(stock), unit)),
         None,
         {k: item[k] for k in ("id", "name", "unit", "consumption_type", "stock")},
     )
     if conflict := _save(state):
         return conflict
+    stock_display = _amount(float(stock), unit)
     if consumption_type == "unit":
-        return (
-            f"Registered {name} ({_amount(float(stock), unit)}). Servings per "
-            f"{unit} will be learned from the first empty unit."
-        )
+        return t("item_registered_unit", name=name, stock=stock_display, unit=unit)
     if consumption_type == "count":
-        return (
-            f"Registered {name} ({_amount(float(stock), unit)}, tracked by count)."
-        )
-    return (
-        f"Registered {name} ({_amount(float(stock), unit)}; coefficient starts "
-        "at 1.00 and learns from stock counts)."
-    )
+        return t("item_registered_count", name=name, stock=stock_display)
+    return t("item_registered_weight", name=name, stock=stock_display)
 
 
 @tool
@@ -1186,13 +1219,13 @@ def register_product(
     if error := _check_passphrase(state, passphrase):
         return error
     if not ITEM_ID_PATTERN.match(product_id):
-        return "product_id must be lowercase letters and underscores."
+        return t("product_id_format")
     if _find(state["products"], product_id) is not None:
-        return f'Product ID "{product_id}" already exists.'
+        return t("product_exists", product_id=product_id)
     if price < 0:
-        return "Price must be zero or more."
+        return t("price_nonnegative")
     if not recipe:
-        return "The recipe is empty. Specify at least one ingredient."
+        return t("recipe_empty")
 
     seen: set[str] = set()
     missing: list[str] = []
@@ -1200,20 +1233,15 @@ def register_product(
         item_id = ingredient.get("item_id")
         qty = ingredient.get("qty")
         if not item_id or qty is None or float(qty) <= 0:
-            return (
-                "Every recipe element needs an item_id and a qty greater than zero."
-            )
+            return t("recipe_element_invalid")
         if item_id in seen:
-            return f'Item "{item_id}" appears twice in the recipe.'
+            return t("recipe_duplicate", item_id=item_id)
         seen.add(item_id)
         item = _find(state["items"], item_id)
         if item is None or not item.get("active", True):
             missing.append(item_id)
     if missing:
-        return (
-            "These items are unregistered. Register them first with "
-            "register_item: " + ", ".join(missing)
-        )
+        return t("recipe_missing_items", names=_join(missing))
 
     product = {
         "id": product_id,
@@ -1224,7 +1252,7 @@ def register_product(
         ],
     }
     state["products"].append(product)
-    recipe_text = ", ".join(
+    recipe_text = _join(
         f'{_find(state["items"], i["item_id"])["name"]} '
         f'{_amount(float(i["qty"]), _find(state["items"], i["item_id"])["unit"])}'
         for i in product["recipe"]
@@ -1232,13 +1260,13 @@ def register_product(
     _log_setting(
         state,
         "register_product",
-        f"Added product: {name} (¥{price}) — recipe: {recipe_text}",
+        t("log_product_added", name=name, price=price, recipe=recipe_text),
         None,
         product,
     )
     if conflict := _save(state):
         return conflict
-    return f"Registered {name} (¥{price}). Recipe: {recipe_text}"
+    return t("product_registered", name=name, price=price, recipe=recipe_text)
 
 
 @tool
@@ -1263,15 +1291,12 @@ def update_recipe(
         return error
     product = _find(state["products"], product_id)
     if product is None:
-        return f'Product ID "{product_id}" was not found.'
+        return t("product_not_found", product_id=product_id)
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return (
-            f'Item ID "{item_id}" is unregistered. '
-            "Register it first with register_item."
-        )
+        return t("item_unregistered", item_id=item_id)
     if qty < 0:
-        return "qty must be zero or more (0 removes the ingredient)."
+        return t("recipe_qty_nonnegative")
 
     existing = next(
         (i for i in product["recipe"] if i["item_id"] == item_id), None
@@ -1279,43 +1304,50 @@ def update_recipe(
     unit = item["unit"]
     if qty == 0:
         if existing is None:
-            return (
-                f'The recipe for {product["name"]} does not include '
-                f'{item["name"]}.'
-            )
+            return t("recipe_not_include", product=product["name"], item=item["name"])
         product["recipe"] = [
             i for i in product["recipe"] if i["item_id"] != item_id
         ]
-        summary = (
-            f'Recipe for {product["name"]}: {item["name"]} '
-            f'{_amount(float(existing["qty"]), unit)} → removed'
+        summary = t(
+            "log_recipe_removed",
+            product=product["name"],
+            item=item["name"],
+            amount=_amount(float(existing["qty"]), unit),
         )
         before, after = float(existing["qty"]), None
-        message = (
-            f'Removed {item["name"]} from the recipe for {product["name"]}.'
-        )
+        message = t("recipe_removed", product=product["name"], item=item["name"])
     elif existing is None:
         product["recipe"].append({"item_id": item_id, "qty": float(qty)})
-        summary = (
-            f'Recipe for {product["name"]}: {item["name"]} '
-            f"none → {_amount(float(qty), unit)}"
+        summary = t(
+            "log_recipe_added",
+            product=product["name"],
+            item=item["name"],
+            amount=_amount(float(qty), unit),
         )
         before, after = None, float(qty)
-        message = (
-            f'Added {item["name"]} '
-            f'{_amount(float(qty), unit)} to the recipe for {product["name"]}.'
+        message = t(
+            "recipe_added",
+            product=product["name"],
+            item=item["name"],
+            amount=_amount(float(qty), unit),
         )
     else:
         before = float(existing["qty"])
         existing["qty"] = float(qty)
-        summary = (
-            f'Recipe for {product["name"]}: {item["name"]} '
-            f"{_amount(before, unit)} → {_amount(float(qty), unit)}"
+        summary = t(
+            "log_recipe_changed",
+            product=product["name"],
+            item=item["name"],
+            before=_amount(before, unit),
+            after=_amount(float(qty), unit),
         )
         after = float(qty)
-        message = (
-            f'Changed {item["name"]} in {product["name"]} from '
-            f"{_amount(before, unit)} to {_amount(float(qty), unit)}."
+        message = t(
+            "recipe_changed",
+            product=product["name"],
+            item=item["name"],
+            before=_amount(before, unit),
+            after=_amount(float(qty), unit),
         )
     _log_setting(state, "update_recipe", summary, before, after)
     if conflict := _save(state):
@@ -1361,21 +1393,15 @@ def update_item(
         return error
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return f'Item ID "{item_id}" was not found.'
+        return t("item_not_found", item_id=item_id)
     if not new_name and not new_unit and not new_purchase_unit and new_unit_weight <= 0:
-        return (
-            "Specify what to change "
-            "(new_name / new_unit / new_purchase_unit / new_unit_weight)."
-        )
+        return t("update_item_nothing")
 
     messages: list[str] = []
 
     if new_purchase_unit or new_unit_weight > 0:
         if not new_purchase_unit and not item.get("purchase_unit"):
-            return (
-                "Cannot set an estimated amount alone. Also specify the "
-                "purchase unit (new_purchase_unit)."
-            )
+            return t("unit_weight_alone")
         before_purchase = {
             "purchase_unit": item.get("purchase_unit"),
             "unit_weight": item.get("unit_weight"),
@@ -1386,15 +1412,23 @@ def update_item(
             item["unit_weight"] = new_unit_weight
         purchase_unit = item["purchase_unit"]
         weight_note = (
-            f' (1 {purchase_unit} ≈ '
-            f'{_amount(float(item["unit_weight"]), item["unit"])})'
+            t(
+                "purchase_weight_note",
+                purchase_unit=purchase_unit,
+                amount=_amount(float(item["unit_weight"]), item["unit"]),
+            )
             if item.get("unit_weight")
             else ""
         )
         _log_setting(
             state,
             "update_item",
-            f'Set purchase unit for {item["name"]}: {purchase_unit}{weight_note}',
+            t(
+                "log_purchase_unit_set",
+                name=item["name"],
+                purchase_unit=purchase_unit,
+                note=weight_note,
+            ),
             before_purchase,
             {
                 "purchase_unit": item.get("purchase_unit"),
@@ -1402,9 +1436,7 @@ def update_item(
             },
         )
         messages.append(
-            f"Registered the purchase unit as {purchase_unit}{weight_note}. "
-            "Tell me the actual amount at purchase time when you learn it — "
-            "real measurements will refine the estimate."
+            t("purchase_unit_registered", purchase_unit=purchase_unit, note=weight_note)
         )
 
     if new_name and new_name != item["name"]:
@@ -1413,11 +1445,11 @@ def update_item(
         _log_setting(
             state,
             "update_item",
-            f"Renamed item: {old_name} → {new_name}",
+            t("log_item_renamed", old=old_name, new=new_name),
             old_name,
             new_name,
         )
-        messages.append(f"Renamed {old_name} to {new_name}.")
+        messages.append(t("item_renamed", old=old_name, new=new_name))
 
     if new_unit and new_unit != item["unit"]:
         old_unit = item["unit"]
@@ -1447,32 +1479,42 @@ def update_item(
             _log_setting(
                 state,
                 "update_item",
-                f'Changed unit for {item["name"]}: {old_unit} → {new_unit} '
-                f"(stock {_amount(old_stock, old_unit)} → "
-                f'{_amount(float(item["stock"]), new_unit)}, recipes converted)',
+                t(
+                    "log_unit_converted",
+                    name=item["name"],
+                    old_unit=old_unit,
+                    new_unit=new_unit,
+                    old_stock=_amount(old_stock, old_unit),
+                    new_stock=_amount(float(item["stock"]), new_unit),
+                ),
                 before_snapshot,
                 {"unit": new_unit, "stock": item["stock"]},
             )
             note = (
-                f"Recipes ({', '.join(dict.fromkeys(affected))}) were converted too."
+                t("recipes_converted_note", names=_join(dict.fromkeys(affected)))
                 if affected
                 else ""
             )
             messages.append(
-                f"Converted the unit from {old_unit} to {new_unit} "
-                f'(stock {_amount(float(item["stock"]), new_unit)}). {note}'
+                t(
+                    "unit_converted",
+                    old_unit=old_unit,
+                    new_unit=new_unit,
+                    stock=_amount(float(item["stock"]), new_unit),
+                    note=note,
+                )
             )
         else:
             # Different kind: no conversion. A recount is mandatory
             # (design doc §2-4).
             new_kind = _unit_kind(new_unit)
             if new_stock < 0:
-                return (
-                    f'Changing the unit of {item["name"]} from {old_unit} to '
-                    f"{new_unit} cannot be converted automatically. The current "
-                    f"stock of {_amount(old_stock, old_unit)} must be recounted. "
-                    f"Tell me how many {new_unit} there are now "
-                    "(pass it as new_stock)."
+                return t(
+                    "unit_change_needs_recount",
+                    name=item["name"],
+                    old_unit=old_unit,
+                    new_unit=new_unit,
+                    old_stock=_amount(old_stock, old_unit),
                 )
             item["unit"] = new_unit
             if new_kind:
@@ -1501,10 +1543,14 @@ def update_item(
             _log_setting(
                 state,
                 "update_item",
-                f'Changed unit for {item["name"]}: {old_unit} → {new_unit} '
-                f"(stock {_amount(old_stock, old_unit)} → "
-                f"{_amount(float(new_stock), new_unit)}, coefficient reset to "
-                "1.0 to relearn)",
+                t(
+                    "log_unit_changed",
+                    name=item["name"],
+                    old_unit=old_unit,
+                    new_unit=new_unit,
+                    old_stock=_amount(old_stock, old_unit),
+                    new_stock=_amount(float(new_stock), new_unit),
+                ),
                 before_snapshot,
                 {
                     "unit": new_unit,
@@ -1514,22 +1560,25 @@ def update_item(
                 },
             )
             warning = (
-                f"Recipe amounts ({', '.join(affected_products)}) are still in "
-                "the old unit. Fix them with update_recipe."
+                t("recipes_old_unit_warning", names=_join(affected_products))
                 if affected_products
                 else ""
             )
             messages.append(
-                f"Changed the unit from {old_unit} to {new_unit} and recounted "
-                f"the stock as {_amount(float(new_stock), new_unit)}. The "
-                f"coefficient is back to 1.0 and will relearn. {warning}"
+                t(
+                    "unit_changed",
+                    old_unit=old_unit,
+                    new_unit=new_unit,
+                    stock=_amount(float(new_stock), new_unit),
+                    warning=warning,
+                )
             )
     elif new_unit:
-        messages.append(f"The unit is already {new_unit}.")
+        messages.append(t("unit_already", unit=new_unit))
 
     if conflict := _save(state):
         return conflict
-    return " ".join(messages) if messages else "Nothing was changed."
+    return " ".join(messages) if messages else t("nothing_changed")
 
 
 @tool
@@ -1556,27 +1605,20 @@ def delete_product(
         return error
     product = _find(state["products"], product_id)
     if product is None:
-        return f'Product ID "{product_id}" was not found.'
+        return t("product_not_found", product_id=product_id)
     if not confirm:
-        return (
-            f'You are about to delete {product["name"]} (¥{product["price"]}). '
-            "A deleted product cannot be restored (its items and sales history "
-            "remain). Confirm with the owner that they really want this, then "
-            "call again with confirm=True."
-        )
+        return t("delete_confirm", name=product["name"], price=product["price"])
     state["products"] = [p for p in state["products"] if p["id"] != product_id]
     _log_setting(
         state,
         "delete_product",
-        f'Deleted product: {product["name"]} (¥{product["price"]})',
+        t("log_product_deleted", name=product["name"], price=product["price"]),
         product,
         None,
     )
     if conflict := _save(state):
         return conflict
-    return (
-        f'Deleted {product["name"]}. Its items and sales history are still there.'
-    )
+    return t("product_deleted", name=product["name"])
 
 
 @tool
@@ -1597,7 +1639,7 @@ def update_config(
         new_notify_email: Email address to notify about settings changes.
     """
     if not new_passphrase and not new_notify_email:
-        return "Specify what to set (new_passphrase or new_notify_email)."
+        return t("config_nothing")
     state = load_state()
     if error := _check_passphrase(state, passphrase):
         return error
@@ -1605,21 +1647,19 @@ def update_config(
     messages: list[str] = []
     if new_passphrase:
         config["passphrase"] = new_passphrase
-        _log_setting(state, "update_config", "Passphrase set", None, "(hidden)")
-        messages.append(
-            "Passphrase set. It will be needed for recipe and unit changes."
-        )
+        _log_setting(state, "update_config", t("log_passphrase_set"), None, t("hidden"))
+        messages.append(t("passphrase_set"))
     if new_notify_email:
         old_email = config.get("notify_email")
         config["notify_email"] = new_notify_email
         _log_setting(
             state,
             "update_config",
-            f"Notification email set: {new_notify_email}",
+            t("log_email_set", email=new_notify_email),
             old_email,
             new_notify_email,
         )
-        messages.append(f"Notifications will go to {new_notify_email}.")
+        messages.append(t("email_set", email=new_notify_email))
     if conflict := _save(state):
         return conflict
     return " ".join(messages)

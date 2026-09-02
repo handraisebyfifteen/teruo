@@ -1,5 +1,7 @@
 # teruo — 設計書B（システム仕様）
 
+> English translation: [teruo-design.en.md](teruo-design.en.md)
+
 キッチンカー・屋台向けの在庫管理エージェント。
 設計書A（Tier 1 実装）の上位にあたる、システム全体の仕様。
 デモの題材（ケバブ）と、システムの仕様を分けて記載する。

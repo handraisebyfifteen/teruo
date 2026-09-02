@@ -77,18 +77,40 @@ python main.py
 - `python main.py --setup` でカウンセリングを強制的にやり直せます
 - 終了するには `exit` または `quit` と入力します
 
+## 言語
+
+既定は英語です。プロンプト・ツール出力・CLI をすべて日本語にするには、初回だけ
+`--lang ja` を付けて起動してください:
+
+```bash
+python main.py --lang ja
+```
+
+選んだ言語は `data/state.json` の `config.language` に保存されるので、2回目以降は
+指定不要です。環境変数 `TERUO_LANG=ja` でも指定できます。
+`data/state.ja.json` は同じデモ店を日本語の品目名・助数詞（枚 / 本 / 個）で
+登録したものです:
+
+```bash
+INVENTORY_STATE_PATH=data/state.ja.json python main.py
+```
+
+画面に出る文言は `i18n.py` に英日を並べて置いてあり、計算コードは共通です。
+設計書・指示書は日本語が正で、英訳を `docs/*.en.md` に併置しています。
+
 ## ファイル
 
-- `main.py`: 対話ループ（通常モード / カウンセリングモード）
-- `agents.py`: 判断層のエージェント3役（報告係・記録係・観測係）
+- `main.py`: 対話ループ（通常モード / カウンセリングモード）、言語の選択
+- `agents.py`: 判断層のエージェント3役（報告係・記録係・観測係）。プロンプトは英日両方
 - `tools.py`: 計算ツール群（記録・登録・照会）
+- `i18n.py`: 画面に出る文言の英日対訳表
 - `store.py`: `data/state.json`の読み書き（アトミック書き込み・同時書き込み検知）
-- `data/state.json`: 在庫、レシピ、履歴、設定
+- `data/state.json`: 在庫、レシピ、履歴、設定（`data/state.ja.json`: 日本語のデモ店）
 - `tests/simulate_convergence.py`: 係数収束の検証シミュレーション
 
 ## アーキテクチャ
 
-![teruo アーキテクチャ図](docs/architecture.svg)
+![teruo アーキテクチャ図](docs/architecture.ja.svg)
 
 計算(在庫減算・係数学習)はすべて Python ツール側で行い、AI は判断だけを担います。
 判断層は設計書にある3つの判断に沿って3エージェントに分かれています

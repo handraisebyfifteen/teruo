@@ -1,5 +1,7 @@
 # teruo — 指示書（Claude Code 向け・ステップ0〜6）
 
+> English translation: [teruo-instructions.en.md](teruo-instructions.en.md)
+
 ## 0. この指示書の使い方
 
 ### 一度に全部渡さない
