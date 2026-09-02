@@ -1,0 +1,266 @@
+{
+  "products": [
+    {
+      "id": "kebab_sand",
+      "name": "ケバブサンド",
+      "price": 600,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 75
+        },
+        {
+          "item_id": "pita",
+          "qty": 1
+        },
+        {
+          "item_id": "sauce_yogurt",
+          "qty": 1
+        },
+        {
+          "item_id": "wrap_paper",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "kebab_wrap",
+      "name": "ケバブラップ",
+      "price": 600,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 75
+        },
+        {
+          "item_id": "tortilla",
+          "qty": 1
+        },
+        {
+          "item_id": "sauce_yogurt",
+          "qty": 1
+        },
+        {
+          "item_id": "wrap_paper",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "rice_box",
+      "name": "ライスボックス",
+      "price": 700,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 110
+        },
+        {
+          "item_id": "rice",
+          "qty": 200
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        },
+        {
+          "item_id": "spoon",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "kebab_mix",
+      "name": "おつまみケバブミックス",
+      "price": 500,
+      "recipe": [
+        {
+          "item_id": "meat_beef",
+          "qty": 60
+        },
+        {
+          "item_id": "meat_chicken",
+          "qty": 60
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "meat_only",
+      "name": "ケバブミートのみ",
+      "price": 500,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 120
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "meat_chicken",
+      "name": "ケバブ肉（チキン）",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "purchase_unit": "本",
+      "unit_weight": 10000,
+      "stock": 8500,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "meat_beef",
+      "name": "ケバブ肉（ビーフ）",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "purchase_unit": "本",
+      "unit_weight": 10000,
+      "stock": 6200,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "pita",
+      "name": "ピタパン",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 200,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "tortilla",
+      "name": "トルティーヤ",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 150,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "rice",
+      "name": "ライス",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "stock": 8000,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "sauce_yogurt",
+      "name": "ソース（ヨーグルト）",
+      "tier": 2,
+      "unit": "本",
+      "unit_type": "count",
+      "consumption_type": "unit",
+      "stock": 4,
+      "coefficient": null,
+      "sales_count": 0,
+      "opened_at_sales_count": null,
+      "unit_history": [],
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "wrap_paper",
+      "name": "ラップ紙",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 500,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "napkin",
+      "name": "ナプキン",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 1000,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "container",
+      "name": "容器",
+      "tier": 1,
+      "unit": "個",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 300,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    },
+    {
+      "id": "spoon",
+      "name": "スプーン",
+      "tier": 1,
+      "unit": "本",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 300,
+      "coefficient": 1.0,
+      "last_counted": null,
+      "count_history": [],
+      "active": true
+    }
+  ],
+  "history": [],
+  "config": {
+    "language": "ja"
+  }
+}

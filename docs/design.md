@@ -1,5 +1,7 @@
 # 設計書A — キッチンカー在庫エージェント
 
+> English translation: [design.en.md](design.en.md)
+
 Tier 1（初期実装）の実装元は、ユーザー提供の設計書
 `Pasted--A-0-Replit-Agent--1788164012029_1788164012029.txt` です。
 本書はそれを引き継ぎ、Tier 2〜4 への拡張を定義します。
