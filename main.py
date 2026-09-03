@@ -4,6 +4,10 @@ Python calculates, the AI judges. If the state is empty, the onboarding
 interview runs first. The everyday judgment layer is split into three roles
 (agents.py, instructions step 5.5).
 
+A typed line may name local files — a menu photo, a stocktake sheet — which
+attachments.py turns into content blocks the model reads directly. Links are
+refused there, in Python: teruo has no external access (instructions appendix A).
+
 Language: English by default. ``python main.py --lang ja`` (or TERUO_LANG=ja)
 switches the whole product — prompts, tool output, CLI — to Japanese and
 remembers the choice in state.json (config.language), so later launches
@@ -18,6 +22,7 @@ import sys
 from strands import Agent
 
 from agents import build_operations_agent
+from attachments import build_prompt
 from i18n import DEFAULT_LANGUAGE, get_language, normalize_language, set_language, t
 from store import load_state, save_state
 from tools import (
@@ -72,6 +77,16 @@ You are about to run the onboarding interview and register the shop's setup thro
 - Always leave arithmetic to the tools
 - When a tool result starts with "[Already shown on screen", its content is
   already on the owner's screen. Don't repeat it
+
+## Files the owner hands you
+The owner can give you a menu photo, a spreadsheet, a CSV or a PDF instead of
+typing everything out — read it and use it to fill in the stages below.
+- Never register straight from a file. Show what you read, line by line, and
+  get a yes first. A misread price registered silently is worse than no file
+- Say which lines you are unsure of rather than quietly guessing
+- Read currency symbols and units exactly as written. Never convert them
+  ($5.00 stays $5.00). Ask if the shop's own unit differs
+- Links you cannot open. Ask for a file or plain text instead
 
 ## Stage 1 — the shape of the shop
 "What do you sell? Walk me through the menu."
@@ -159,6 +174,16 @@ Be polite and concise.
 - IDは英小文字スネークケース（例: meat_chicken）であなたが命名する
 - 数値の計算は必ずツールに任せる
 - ツールの結果が「[画面に表示済み〜]」で始まる場合、内容は既に画面に出ている。繰り返さない
+
+## 店主から渡されるファイル
+店主はメニューの写真・表計算ファイル・CSV・PDFを渡してくることがある。
+全部を口で言わせる代わりに読み取り、以下の段階を埋めるのに使う。
+- ファイルから直接登録しない。読み取った内容を1行ずつ見せ、承認をもらってから登録する。
+  読み違えた値段を黙って登録する方が、ファイルを使わないより悪い
+- 自信のない行は、黙って推測せず「ここが読めませんでした」と言う
+- 通貨記号や単位は書かれているとおりに読む。勝手に読み替えない
+  （$5.00 は $5.00 のまま）。店の単位と違うなら店主に聞く
+- リンクは開けない。ファイルかテキストで渡してもらう
 
 ## 段階1 — 店の輪郭
 「どんなものを売っていますか。メニューをひと通り教えてください」
@@ -316,8 +341,16 @@ def main() -> None:
             break
         if not user_input:
             continue
+        # A line may name a menu photo or a spreadsheet; anything that isn't a
+        # readable local file is answered here, in Python, not guessed at by
+        # the model (principle 3).
+        prompt, notes = build_prompt(user_input)
+        for note in notes:
+            print(note)
+        if prompt is None:
+            continue
         try:
-            agent(user_input)
+            agent(prompt)
         except Exception as error:
             print(t("cli_error", error=error), file=sys.stderr)
 

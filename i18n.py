@@ -572,6 +572,32 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "teruo — inventory agent. Type exit to quit.",
         "ja": "teruo — 在庫管理エージェントです。終了するには exit と入力してください。",
     },
+
+    # --- Files handed to teruo (attachments.py) ---
+    "attachment_no_url": {
+        "en": "I can't open links. Save the page as a photo or a file and give me the file name.",
+        "ja": "リンクは開けません。写真かファイルとして保存して、ファイル名で渡してください。",
+    },
+    "attachment_not_found": {
+        "en": "No file named {path} here. Check the name, or give me the full path.",
+        "ja": "{path} というファイルが見つかりません。名前を確認するか、フルパスで渡してください。",
+    },
+    "attachment_too_large": {
+        "en": "{path} is too big (the limit is about {limit} MB). Use a smaller photo, or split the file.",
+        "ja": "{path} は大きすぎます（上限は約{limit}MB）。写真を小さくするか、ファイルを分けてください。",
+    },
+    "attachment_unreadable": {
+        "en": "Could not read {path}: {error}",
+        "ja": "{path} を読めませんでした: {error}",
+    },
+    "attachment_too_many": {
+        "en": "That's too many files at once. Up to {limit} per message, please.",
+        "ja": "一度に渡せるファイルが多すぎます。1回につき{limit}個までにしてください。",
+    },
+    "attachment_default_text": {
+        "en": "Here is {names}. Read it and show me what you got before registering anything.",
+        "ja": "{names} を渡します。読み取った内容を見せてください。登録はその後で。",
+    },
 }
 
 # Fail at import if a translation is missing — never at the counter.

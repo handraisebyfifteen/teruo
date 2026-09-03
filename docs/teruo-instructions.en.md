@@ -21,7 +21,8 @@ None of the following will be built, now or later.
 - Databases (including PostgreSQL / SQLite / Firestore)
 - Docker
 - Authentication or user management (the passphrase is not authentication; see step 4)
-- Weather APIs, fetching external data
+- Weather APIs, fetching external data — including scraping or integrating
+  review sites and map APIs
 
 ### Don't rebuild what already exists
 
@@ -987,7 +988,8 @@ Deadline: September 14, 2026
 | Authentication / user management | The passphrase prevents "oops" |
 | Tier 2 / 3 / 4 | Out of scope this time |
 | Weather API | Not worth the complexity |
-| Delivery-note scanning | Pasting a note covers it |
+| External access (review sites, map APIs) | Terms and key management for data that doesn't carry the items, prices and ingredients we actually need |
+| Delivery-note scanning | Photos and files can be handed over now, so no separate build |
 | Automatic order execution | Handing the decision back to a person is the core of the design |
 | Oil management | Different in nature from other items. Design separately |
 

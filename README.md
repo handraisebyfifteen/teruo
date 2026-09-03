@@ -105,6 +105,29 @@ python main.py
 - `python main.py --setup` forces the onboarding interview to run again
 - Type `exit` or `quit` to leave
 
+## Handing teruo a file
+
+Type a file name on the prompt line, with or without words around it:
+
+```
+> this is our menu  menu_photo.png
+> stocktake sheet.xlsx
+> "delivery slip Mar 3.pdf" came in this morning
+```
+
+Photos (`png` `jpg` `gif` `webp`) and documents (`xlsx` `xls` `csv` `pdf`
+`docx` `doc` `html` `txt` `md`) are read by the model directly — nothing is
+parsed locally, so no spreadsheet library is involved. Paths may contain
+spaces, quoted or not.
+
+teruo always shows what it read and waits for a yes before recording
+anything; a misread price is caught there, not in the stock figures a week
+later. Up to 5 files per line (about 3.7 MB per photo, 4.5 MB per document).
+
+**Links are not read.** teruo has no external access by design — no
+scraping, no map or review-site APIs (instructions appendix A). Save the page
+as a photo or a file and hand it over that way.
+
 ## Language
 
 teruo speaks English by default. To run it in Japanese — prompts, tool
@@ -130,6 +153,7 @@ have English translations alongside (`docs/*.en.md`).
 
 - `main.py`: the interactive loop (operations mode / onboarding mode), language selection
 - `agents.py`: the judgment layer's three agents (reporter, record keeper, observer), prompts in both languages
+- `attachments.py`: turns file names typed at the prompt into image/document content blocks
 - `tools.py`: the calculation tools (recording, registration, queries)
 - `i18n.py`: every user-facing string, English and Japanese side by side
 - `store.py`: reads/writes `data/state.json` (atomic writes, concurrent-write detection)
