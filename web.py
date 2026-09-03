@@ -68,9 +68,17 @@ def _sse(payload: dict) -> str:
     return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
 
-@app.get("/")
+# GET and HEAD both: Replit's preview probes with HEAD before it will attach,
+# and FastAPI's @app.get does not answer HEAD on its own.
+@app.api_route("/", methods=["GET", "HEAD"])
 def page() -> FileResponse:
     return FileResponse(PAGE)
+
+
+@app.get("/healthz")
+def healthz() -> dict:
+    """A cheap liveness probe that never touches Bedrock or the state file."""
+    return {"ok": True}
 
 
 @app.get("/api/config")
