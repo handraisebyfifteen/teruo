@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>teruo</title>
+<style>
+  :root {
+    --ink: #23211d;
+    --muted: #7d766b;
+    --line: #e2ddd2;
+    --ground: #faf8f3;
+    --panel: #ffffff;
+    --fact: #f3f0e7;
+    --accent: #3d6b52;
+    --warn: #8a5a2b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+          "Noto Sans JP", Meiryo, sans-serif;
+    display: flex; flex-direction: column;
+  }
+
+  header {
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    background: var(--panel);
+  }
+  header .name { font-size: 19px; font-weight: 600; letter-spacing: .01em; }
+  header .tagline { color: var(--muted); font-size: 13px; }
+
+  #banner {
+    display: none; padding: 9px 20px; font-size: 13px;
+    background: #fdf6e8; color: var(--warn); border-bottom: 1px solid #f0e3c9;
+  }
+  #banner.on { display: block; }
+
+  main {
+    flex: 1; overflow-y: auto; padding: 22px 20px 8px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .turn { max-width: 760px; width: 100%; margin: 0 auto; }
+
+  .who {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 5px;
+  }
+  .said { white-space: pre-wrap; word-break: break-word; }
+  .turn.owner .said {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 3px; padding: 10px 13px;
+  }
+
+  /* Facts are Python's output, kept verbatim and marked as such. */
+  .fact {
+    background: var(--fact); border-left: 3px solid var(--accent);
+    padding: 11px 13px; margin: 10px 0; border-radius: 0 3px 3px 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .fact .badge {
+    display: block; font-family: inherit; font-size: 10px;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 7px;
+  }
+
+  /* The activity strip: which role or tool is running right now. */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chip {
+    font-size: 12px; padding: 3px 9px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--muted);
+  }
+  .chip.live { border-color: var(--accent); color: var(--accent); }
+  .chip.live::before {
+    content: ""; display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--accent); margin-right: 6px;
+    animation: pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .25 } }
+
+  .note {
+    font-size: 13px; color: var(--warn); background: #fdf6e8;
+    border: 1px solid #f0e3c9; border-radius: 3px; padding: 9px 12px;
+  }
+  .note.bad { color: #8c3a3a; background: #fdefef; border-color: #f0d3d3; }
+
+  form {
+    border-top: 1px solid var(--line); background: var(--panel);
+    padding: 12px 20px 16px;
+  }
+  .composer { max-width: 760px; margin: 0 auto; }
+  #files { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  #files:empty { display: none; }
+  .file {
+    font-size: 12px; background: var(--fact); border: 1px solid var(--line);
+    border-radius: 3px; padding: 3px 8px; display: flex; align-items: center; gap: 7px;
+  }
+  .file button {
+    border: 0; background: none; cursor: pointer; color: var(--muted);
+    font-size: 15px; line-height: 1; padding: 0;
+  }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  textarea {
+    flex: 1; resize: none; font: inherit; color: inherit;
+    border: 1px solid var(--line); border-radius: 3px; padding: 10px 12px;
+    background: var(--ground); min-height: 44px; max-height: 180px;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button.send {
+    font: inherit; padding: 11px 20px; border: 0; border-radius: 3px;
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button.send:disabled { background: #b9b4aa; cursor: default; }
+
+  #drop {
+    position: fixed; inset: 0; display: none; z-index: 10;
+    background: rgba(250, 248, 243, .93); border: 3px dashed var(--accent);
+    align-items: center; justify-content: center;
+    font-size: 19px; color: var(--accent);
+  }
+  #drop.on { display: flex; }
+</style>
+</head>
+<body>
+  <header>
+    <span class="name">teruo</span>
+    <span class="tagline" id="tagline"></span>
+  </header>
+  <div id="banner"></div>
+  <main id="log"></main>
+  <form id="composer">
+    <div class="composer">
+      <div id="files"></div>
+      <div class="row">
+        <textarea id="text" rows="1"></textarea>
+        <button type="submit" class="send" id="send"></button>
+      </div>
+    </div>
+  </form>
+  <div id="drop"></div>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("composer");
+const textarea = document.getElementById("text");
+const sendButton = document.getElementById("send");
+const fileStrip = document.getElementById("files");
+const dropOverlay = document.getElementById("drop");
+
+let strings = {};
+let pending = [];      // files staged for the next message
+let busy = false;
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function turn(role, label) {
+  const node = el("div", "turn " + role);
+  node.append(el("div", "who", label));
+  log.append(node);
+  return node;
+}
+
+function toBottom() {
+  log.scrollTop = log.scrollHeight;
+}
+
+function note(text, bad) {
+  const node = turn("system", "");
+  node.querySelector(".who").remove();
+  node.append(el("div", "note" + (bad ? " bad" : ""), text));
+  toBottom();
+}
+
+function renderFiles() {
+  fileStrip.replaceChildren();
+  pending.forEach((file, index) => {
+    const chip = el("span", "file", file.name);
+    const remove = el("button", null, "×");
+    remove.type = "button";
+    remove.onclick = () => { pending.splice(index, 1); renderFiles(); };
+    chip.append(remove);
+    fileStrip.append(chip);
+  });
+}
+
+function stage(files) {
+  for (const file of files) pending.push(file);
+  renderFiles();
+}
+
+// --- drag and drop -------------------------------------------------------
+let dragDepth = 0;
+addEventListener("dragenter", event => {
+  event.preventDefault();
+  if (++dragDepth === 1) dropOverlay.classList.add("on");
+});
+addEventListener("dragover", event => event.preventDefault());
+addEventListener("dragleave", () => {
+  if (--dragDepth <= 0) { dragDepth = 0; dropOverlay.classList.remove("on"); }
+});
+addEventListener("drop", event => {
+  event.preventDefault();
+  dragDepth = 0;
+  dropOverlay.classList.remove("on");
+  if (event.dataTransfer?.files?.length) stage(event.dataTransfer.files);
+});
+
+// --- composer ------------------------------------------------------------
+textarea.addEventListener("input", () => {
+  textarea.style.height = "auto";
+  textarea.style.height = Math.min(textarea.scrollHeight, 180) + "px";
+});
+textarea.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    form.requestSubmit();
+  }
+});
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  const text = textarea.value.trim();
+  if (busy || (!text && pending.length === 0)) return;
+
+  const shown = [text, ...pending.map(file => file.name)].filter(Boolean).join("\n");
+  turn("owner", "you").append(el("div", "said", shown));
+
+  const body = new FormData();
+  body.append("text", text);
+  for (const file of pending) body.append("files", file);
+
+  textarea.value = "";
+  textarea.style.height = "auto";
+  pending = [];
+  renderFiles();
+  toBottom();
+
+  await send(body);
+});
+
+async function send(body) {
+  await stream(() => fetch("/api/message", { method: "POST", body }));
+}
+
+async function stream(request) {
+  busy = true;
+  sendButton.disabled = true;
+
+  const node = turn("teruo", "teruo");
+  const chips = el("div", "chips");
+  const working = el("span", "chip live", strings.web_working);
+  chips.append(working);
+  node.append(chips);
+  const said = el("div", "said", "");
+  node.append(said);
+  toBottom();
+
+  try {
+    const response = await request();
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const frames = buffer.split("\n\n");
+      buffer = frames.pop();
+      for (const frame of frames) {
+        const line = frame.split("\n").find(part => part.startsWith("data: "));
+        if (line) apply(JSON.parse(line.slice(6)), node, chips, working, said);
+      }
+    }
+  } catch {
+    note(strings.web_disconnected, true);
+  } finally {
+    working.remove();
+    if (!chips.children.length) chips.remove();
+    if (!said.textContent) said.remove();
+    busy = false;
+    sendButton.disabled = false;
+    textarea.focus();
+    toBottom();
+  }
+}
+
+function apply(event, node, chips, working, said) {
+  if (event.type === "tool") {
+    chips.insertBefore(el("span", "chip", event.label), working);
+  } else if (event.type === "fact") {
+    // Python's own output. Kept verbatim, marked, never re-typed by the model.
+    const block = el("div", "fact");
+    block.append(el("span", "badge", strings.web_fact_badge));
+    block.append(document.createTextNode(event.text));
+    node.insertBefore(block, said);
+  } else if (event.type === "text") {
+    said.textContent += event.delta;
+  } else if (event.type === "note") {
+    node.append(el("div", "note", event.text));
+  } else if (event.type === "error") {
+    node.append(el("div", "note bad", event.text));
+  }
+  toBottom();
+}
+
+// --- boot ----------------------------------------------------------------
+(async () => {
+  const config = await (await fetch("/api/config")).json();
+  strings = config.strings;
+  document.documentElement.lang = config.language;
+  document.getElementById("tagline").textContent = strings.web_tagline;
+  textarea.placeholder = strings.web_placeholder;
+  sendButton.textContent = strings.web_send;
+  dropOverlay.textContent = strings.web_drop_hint;
+
+  if (config.counseling) {
+    const banner = document.getElementById("banner");
+    banner.textContent = strings.web_counseling_banner;
+    banner.classList.add("on");
+    textarea.focus();
+    // Onboarding opens with teruo's question, the same as the CLI does.
+    await stream(() => fetch("/api/start", { method: "POST" }));
+  } else {
+    note(strings.web_greeting);
+    textarea.focus();
+  }
+})();
+</script>
+</body>
+</html>

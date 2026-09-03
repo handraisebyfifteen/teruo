@@ -105,6 +105,32 @@ python main.py
 - `python main.py --setup` forces the onboarding interview to run again
 - Type `exit` or `quit` to leave
 
+## The one-screen version
+
+```bash
+python web.py     # then open http://localhost:5000
+```
+
+The same teruo, reached through a browser instead of a terminal. One screen:
+you type at the bottom, the conversation runs above it, and files are dropped
+anywhere on the page.
+
+What the screen shows while teruo works is the point of it. The roles it hands
+work to appear inline as they run — **Record keeper**, **Observer** — so the
+agents-as-tools structure is visible rather than claimed. Numbers that Python
+calculated arrive in their own block, marked *calculated in Python*, and are
+never re-typed by the model (principle 3). The model's own words sit outside
+that block.
+
+Nothing under the hood changed to make this work. `web.py` builds the agent
+through the same `main.build_agent` the CLI uses, and `tools.set_output_sink`
+points the facts at the browser instead of stdout. The calculation layer, the
+state, the judgment layer and the wording are untouched — which is the claim
+this entry point exists to demonstrate. Both entry points remain; run whichever
+suits the room.
+
+Single shop, no login — the same shape as the CLI. One message at a time.
+
 ## Handing teruo a file
 
 Type a file name on the prompt line, with or without words around it:
@@ -151,7 +177,8 @@ have English translations alongside (`docs/*.en.md`).
 
 ## Files
 
-- `main.py`: the interactive loop (operations mode / onboarding mode), language selection
+- `main.py`: the CLI loop (operations mode / onboarding mode), language selection, `build_agent`
+- `web.py` + `web/index.html`: the one-screen browser entry point (same agent, facts routed to the page)
 - `agents.py`: the judgment layer's three agents (reporter, record keeper, observer), prompts in both languages
 - `attachments.py`: turns file names typed at the prompt into image/document content blocks
 - `tools.py`: the calculation tools (recording, registration, queries)

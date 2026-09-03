@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import functools
 import re
+from contextvars import ContextVar
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
@@ -150,6 +151,23 @@ def _display_bound(value: float) -> str:
 # seed_demo.py and friends set this to False to silence it.
 DIRECT_OUTPUT = True
 
+# Where a fact goes once Python has produced it. The CLI leaves this unset and
+# the text lands on stdout; the web entry point installs a sink so the same
+# text reaches that browser instead. A ContextVar rather than a global because
+# Strands runs sync tools through asyncio.to_thread, which copies the context
+# into the worker thread — so the fact follows the request it belongs to.
+_OUTPUT_SINK: ContextVar[Any] = ContextVar("teruo_output_sink", default=None)
+
+
+def set_output_sink(sink) -> Any:
+    """Route facts to ``sink`` instead of stdout. Returns a reset token."""
+    return _OUTPUT_SINK.set(sink)
+
+
+def reset_output_sink(token: Any) -> None:
+    _OUTPUT_SINK.reset(token)
+
+
 def told_marker() -> str:
     """The tag telling the LLM a tool result is already on screen (per language)."""
     return t("told_marker")
@@ -161,9 +179,13 @@ def hit_cap(result: str) -> bool:
 
 
 def _tell(text: str) -> str:
-    """Print the final output directly to stdout and tag it so the LLM won't echo it."""
+    """Emit the final output to the owner's screen and tag it so the LLM won't echo it."""
     if DIRECT_OUTPUT:
-        print(text, flush=True)
+        sink = _OUTPUT_SINK.get()
+        if sink is None:
+            print(text, flush=True)
+        else:
+            sink(text)
         return f"{told_marker()}\n{text}"
     return text
 

@@ -313,16 +313,21 @@ def needs_counseling() -> bool:
     return not state.get("items") and not state.get("products")
 
 
+def build_agent(counseling: bool) -> Agent:
+    """The agent for the mode we're in. Shared by the CLI and the web entry
+    point so both talk to exactly the same teruo."""
+    if counseling:
+        return Agent(
+            system_prompt=COUNSELING_PROMPTS[get_language()], tools=COUNSELING_TOOLS
+        )
+    return build_operations_agent()
+
+
 def main() -> None:
     resolve_language(sys.argv[1:])
     validate_environment()
     counseling = "--setup" in sys.argv[1:] or needs_counseling()
-    if counseling:
-        agent = Agent(
-            system_prompt=COUNSELING_PROMPTS[get_language()], tools=COUNSELING_TOOLS
-        )
-    else:
-        agent = build_operations_agent()
+    agent = build_agent(counseling)
     if counseling:
         print(t("cli_counseling_start"))
         try:

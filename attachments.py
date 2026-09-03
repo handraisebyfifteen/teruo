@@ -122,6 +122,35 @@ def _existing_file(tokens: list[str], start: int) -> tuple[int, Path] | None:
     return None
 
 
+def read_file(path: Path, display_name: str | None = None) -> tuple[Attachment | None, str | None]:
+    """Read one file into an Attachment, or return why it couldn't be used.
+
+    Shared by the CLI (which found the path in a typed line) and the web entry
+    point (which was handed an upload), so both enforce the same limits and
+    produce the same sentences.
+    """
+    label = display_name or path.name
+    classified = _classify(path)
+    if classified is None:
+        return None, t("attachment_unsupported", path=label)
+    if not path.is_file():
+        return None, t("attachment_not_found", path=label)
+
+    kind, fmt = classified
+    limit = MAX_IMAGE_BYTES if kind == "image" else MAX_DOCUMENT_BYTES
+    if path.stat().st_size > limit:
+        return None, t(
+            "attachment_too_large", path=label, limit=f"{limit / 1_000_000:.1f}"
+        )
+
+    try:
+        payload = path.read_bytes()
+    except OSError as error:
+        return None, t("attachment_unreadable", path=label, error=error)
+
+    return Attachment(path, kind, fmt, payload), None
+
+
 def split_input(user_input: str) -> tuple[str, list[Attachment], list[str]]:
     """Pull file paths out of a typed line.
 
@@ -156,27 +185,11 @@ def split_input(user_input: str) -> tuple[str, list[Attachment], list[str]]:
             continue
 
         index, candidate = found
-        kind, fmt = _classify(candidate)
-        limit = MAX_IMAGE_BYTES if kind == "image" else MAX_DOCUMENT_BYTES
-        if candidate.stat().st_size > limit:
-            problems.append(
-                t(
-                    "attachment_too_large",
-                    path=candidate.name,
-                    limit=f"{limit / 1_000_000:.1f}",
-                )
-            )
+        attachment, problem = read_file(candidate)
+        if problem is not None:
+            problems.append(problem)
             continue
-
-        try:
-            payload = candidate.read_bytes()
-        except OSError as error:
-            problems.append(
-                t("attachment_unreadable", path=candidate.name, error=error)
-            )
-            continue
-
-        attachments.append(Attachment(candidate, kind, fmt, payload))
+        attachments.append(attachment)
 
     if len(attachments) > MAX_ATTACHMENTS:
         problems.append(t("attachment_too_many", limit=MAX_ATTACHMENTS))
@@ -199,12 +212,38 @@ def build_prompt(user_input: str) -> tuple[str | list[dict] | None, list[str]]:
     if not attachments:
         return user_input, problems
 
-    # Attachments lead, then the owner's words. Bedrock wants a text block
-    # alongside a document, so stand one in when the line was just a path.
+    return _blocks(text, attachments), problems
+
+
+def _blocks(text: str, attachments: list[Attachment]) -> list[dict]:
+    """Attachments lead, then the owner's words. Bedrock wants a text block
+    alongside a document, so stand one in when only files were handed over."""
     blocks: list[dict] = [
         attachment.content_block(index)
         for index, attachment in enumerate(attachments, start=1)
     ]
     names = ", ".join(attachment.path.name for attachment in attachments)
     blocks.append({"text": text or t("attachment_default_text", names=names)})
-    return blocks, problems
+    return blocks
+
+
+def build_prompt_from_uploads(
+    text: str, uploads: list[tuple[str, Path]]
+) -> tuple[str | list[dict] | None, list[str]]:
+    """Same as build_prompt, for files that arrived as uploads rather than as
+    names typed in a line. ``uploads`` pairs the name the owner sees with the
+    path the file was saved to."""
+    line_text, typed, problems = split_input(text)
+    attachments = list(typed)
+    for display_name, path in uploads:
+        attachment, problem = read_file(path, display_name)
+        if problem is not None:
+            problems.append(problem)
+        else:
+            attachments.append(attachment)
+
+    if len(attachments) > MAX_ATTACHMENTS:
+        return None, [t("attachment_too_many", limit=MAX_ATTACHMENTS)]
+    if not attachments:
+        return (None, problems) if problems else (text, problems)
+    return _blocks(line_text, attachments), problems
