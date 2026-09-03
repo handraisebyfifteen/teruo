@@ -1,0 +1,4854 @@
+{
+  "products": [
+    {
+      "id": "kebab_sand",
+      "name": "ケバブサンド",
+      "price": 600,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 75
+        },
+        {
+          "item_id": "pita",
+          "qty": 1
+        },
+        {
+          "item_id": "sauce_yogurt",
+          "qty": 1
+        },
+        {
+          "item_id": "wrap_paper",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "kebab_wrap",
+      "name": "ケバブラップ",
+      "price": 600,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 75
+        },
+        {
+          "item_id": "tortilla",
+          "qty": 1
+        },
+        {
+          "item_id": "sauce_yogurt",
+          "qty": 1
+        },
+        {
+          "item_id": "wrap_paper",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "rice_box",
+      "name": "ライスボックス",
+      "price": 700,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 110
+        },
+        {
+          "item_id": "rice",
+          "qty": 200
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        },
+        {
+          "item_id": "spoon",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "kebab_mix",
+      "name": "おつまみケバブミックス",
+      "price": 500,
+      "recipe": [
+        {
+          "item_id": "meat_beef",
+          "qty": 60
+        },
+        {
+          "item_id": "meat_chicken",
+          "qty": 60
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        },
+        {
+          "item_id": "napkin",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "meat_only",
+      "name": "ケバブミートのみ",
+      "price": 500,
+      "recipe": [
+        {
+          "item_id": "meat_chicken",
+          "qty": 120
+        },
+        {
+          "item_id": "container",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "meat_chicken",
+      "name": "ケバブ肉（チキン）",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "purchase_unit": "本",
+      "unit_weight": 9999.5,
+      "stock": 7394.4,
+      "coefficient": 1.0398,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 8500.0,
+          "calculated_stock": 8500.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-08T21:30:00+09:00",
+          "actual_stock": 2762.9,
+          "calculated_stock": 5253.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0377
+        },
+        {
+          "recorded_at": "2026-08-15T21:30:00+09:00",
+          "actual_stock": 2664.1,
+          "calculated_stock": 3947.6,
+          "coefficient_before": 1.0377,
+          "coefficient_after": 1.0495
+        },
+        {
+          "recorded_at": "2026-08-22T21:30:00+09:00",
+          "actual_stock": 4531.3,
+          "calculated_stock": 5518.3,
+          "coefficient_before": 1.0495,
+          "coefficient_after": 1.0502
+        },
+        {
+          "recorded_at": "2026-08-29T21:30:00+09:00",
+          "actual_stock": 2897.5,
+          "calculated_stock": 3814.2,
+          "coefficient_before": 1.0502,
+          "coefficient_after": 1.0497
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 7394.4,
+          "calculated_stock": 7294.5,
+          "coefficient_before": 1.0497,
+          "coefficient_after": 1.0398
+        }
+      ],
+      "active": true,
+      "unit_weight_samples": [
+        9804.0,
+        9795.0,
+        10159.0,
+        10170.0,
+        10070.0,
+        10063.0,
+        10270.0,
+        10110.0,
+        10138.0,
+        9765.0,
+        9711.0,
+        10219.0,
+        9719.0
+      ]
+    },
+    {
+      "id": "meat_beef",
+      "name": "ケバブ肉（ビーフ）",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "purchase_unit": "本",
+      "unit_weight": 10297.0,
+      "stock": 8772.0,
+      "coefficient": 1.015,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 6200.0,
+          "calculated_stock": 6200.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 8772.0,
+          "calculated_stock": 8997.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.015
+        }
+      ],
+      "active": true,
+      "unit_weight_samples": [
+        10297.0
+      ]
+    },
+    {
+      "id": "pita",
+      "name": "ピタパン",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 38.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 200.0,
+          "calculated_stock": 200.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 38.0,
+          "calculated_stock": 40.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "tortilla",
+      "name": "トルティーヤ",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 85.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 150.0,
+          "calculated_stock": 150.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 85.0,
+          "calculated_stock": 85.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "rice",
+      "name": "ライス",
+      "tier": 1,
+      "unit": "g",
+      "unit_type": "weight",
+      "consumption_type": "weight",
+      "stock": 5428.0,
+      "coefficient": 1.005,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 8000.0,
+          "calculated_stock": 8000.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 5428.0,
+          "calculated_stock": 5800.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.005
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "sauce_yogurt",
+      "name": "ソース（ヨーグルト）",
+      "tier": 2,
+      "unit": "本",
+      "unit_type": "count",
+      "consumption_type": "unit",
+      "stock": 3.0,
+      "coefficient": 50.0,
+      "sales_count": 1125.0,
+      "opened_at_sales_count": 1100.0,
+      "unit_history": [
+        52,
+        44,
+        52,
+        46,
+        49,
+        48,
+        53,
+        47,
+        49,
+        51,
+        51,
+        54,
+        46,
+        51,
+        51,
+        51,
+        50,
+        53,
+        47,
+        50,
+        56,
+        49
+      ],
+      "last_counted": null,
+      "count_history": [
+        {
+          "recorded_at": "2026-08-02T11:30:00+09:00",
+          "event": "unit_used",
+          "servings": 52,
+          "reflected": true,
+          "coefficient_after": 52.0
+        },
+        {
+          "recorded_at": "2026-08-02T18:15:00+09:00",
+          "event": "unit_used",
+          "servings": 44,
+          "reflected": true,
+          "coefficient_after": 48.0
+        },
+        {
+          "recorded_at": "2026-08-05T11:30:00+09:00",
+          "event": "unit_used",
+          "servings": 52,
+          "reflected": true,
+          "coefficient_after": 49.3
+        },
+        {
+          "recorded_at": "2026-08-06T12:15:00+09:00",
+          "event": "unit_used",
+          "servings": 46,
+          "reflected": true,
+          "coefficient_after": 48.5
+        },
+        {
+          "recorded_at": "2026-08-07T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 49,
+          "reflected": true,
+          "coefficient_after": 48.6
+        },
+        {
+          "recorded_at": "2026-08-08T18:15:00+09:00",
+          "event": "unit_used",
+          "servings": 48,
+          "reflected": true,
+          "coefficient_after": 48.5
+        },
+        {
+          "recorded_at": "2026-08-09T18:15:00+09:00",
+          "event": "unit_used",
+          "servings": 53,
+          "reflected": true,
+          "coefficient_after": 49.1
+        },
+        {
+          "recorded_at": "2026-08-11T19:00:00+09:00",
+          "event": "unit_used",
+          "servings": 47,
+          "reflected": true,
+          "coefficient_after": 48.9
+        },
+        {
+          "recorded_at": "2026-08-13T11:30:00+09:00",
+          "event": "unit_used",
+          "servings": 49,
+          "reflected": true,
+          "coefficient_after": 48.9
+        },
+        {
+          "recorded_at": "2026-08-14T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 51,
+          "reflected": true,
+          "coefficient_after": 49.1
+        },
+        {
+          "recorded_at": "2026-08-15T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 51,
+          "reflected": true,
+          "coefficient_after": 49.3
+        },
+        {
+          "recorded_at": "2026-08-16T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 54,
+          "reflected": true,
+          "coefficient_after": 49.7
+        },
+        {
+          "recorded_at": "2026-08-18T18:15:00+09:00",
+          "event": "unit_used",
+          "servings": 46,
+          "reflected": true,
+          "coefficient_after": 49.4
+        },
+        {
+          "recorded_at": "2026-08-20T11:30:00+09:00",
+          "event": "unit_used",
+          "servings": 51,
+          "reflected": true,
+          "coefficient_after": 49.5
+        },
+        {
+          "recorded_at": "2026-08-21T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 51,
+          "reflected": true,
+          "coefficient_after": 49.6
+        },
+        {
+          "recorded_at": "2026-08-22T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 51,
+          "reflected": true,
+          "coefficient_after": 49.7
+        },
+        {
+          "recorded_at": "2026-08-23T13:00:00+09:00",
+          "event": "unit_used",
+          "servings": 50,
+          "reflected": true,
+          "coefficient_after": 49.7
+        },
+        {
+          "recorded_at": "2026-08-25T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 53,
+          "reflected": true,
+          "coefficient_after": 49.9
+        },
+        {
+          "recorded_at": "2026-08-27T11:30:00+09:00",
+          "event": "unit_used",
+          "servings": 47,
+          "reflected": true,
+          "coefficient_after": 49.7
+        },
+        {
+          "recorded_at": "2026-08-28T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 50,
+          "reflected": true,
+          "coefficient_after": 49.8
+        },
+        {
+          "recorded_at": "2026-08-29T17:30:00+09:00",
+          "event": "unit_used",
+          "servings": 56,
+          "reflected": true,
+          "coefficient_after": 50.0
+        },
+        {
+          "recorded_at": "2026-08-30T13:00:00+09:00",
+          "event": "unit_used",
+          "servings": 49,
+          "reflected": true,
+          "coefficient_after": 50.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "wrap_paper",
+      "name": "ラップ紙",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 375.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 500.0,
+          "calculated_stock": 500.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 375.0,
+          "calculated_stock": 375.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "napkin",
+      "name": "ナプキン",
+      "tier": 1,
+      "unit": "枚",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 564.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 1000.0,
+          "calculated_stock": 1000.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 564.0,
+          "calculated_stock": 564.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "container",
+      "name": "容器",
+      "tier": 1,
+      "unit": "個",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 213.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 300.0,
+          "calculated_stock": 300.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 213.0,
+          "calculated_stock": 213.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    },
+    {
+      "id": "spoon",
+      "name": "スプーン",
+      "tier": 1,
+      "unit": "本",
+      "unit_type": "count",
+      "consumption_type": "count",
+      "stock": 114.0,
+      "coefficient": 1.0,
+      "last_counted": "2026-08-30T21:30:00+09:00",
+      "count_history": [
+        {
+          "recorded_at": "2026-08-01T09:00:00+09:00",
+          "actual_stock": 300.0,
+          "calculated_stock": 300.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        },
+        {
+          "recorded_at": "2026-08-30T21:30:00+09:00",
+          "actual_stock": 114.0,
+          "calculated_stock": 114.0,
+          "coefficient_before": 1.0,
+          "coefficient_after": 1.0
+        }
+      ],
+      "active": true
+    }
+  ],
+  "history": [
+    {
+      "recorded_at": "2026-08-01T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-01T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-01T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-01T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-01T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-01T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-01T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-01T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-01T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-01T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-01T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 9804.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-02T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-02T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-02T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-02T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-02T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-02T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-02T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 9795.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-04T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-04T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-04T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-04T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-04T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-04T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-04T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-04T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-04T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-05T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-05T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-05T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-05T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-05T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-05T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-05T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-05T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10159.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-06T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-06T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-06T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-06T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-06T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-06T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-06T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-06T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-06T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-06T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-06T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-06T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-06T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-06T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-06T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-07T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-07T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-07T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-07T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-07T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-07T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-07T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-07T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-07T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-07T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-07T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-07T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-07T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-08T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-08T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-08T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-08T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-08T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10170.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-09T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-09T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-09T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-09T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-09T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-09T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-09T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-09T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-09T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-09T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-09T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-09T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10070.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-11T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "tortilla",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-11T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-11T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "wrap_paper",
+      "amount": 500.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-11T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-11T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-11T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-11T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-11T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-11T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-11T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-11T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-11T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-12T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-12T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-12T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-12T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-12T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-12T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-12T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-12T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-13T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-13T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-13T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10063.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-14T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-14T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-14T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-14T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-14T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-14T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-14T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-14T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-14T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-14T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-14T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-15T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-15T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-15T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-15T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-15T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-15T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-15T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-15T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-15T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-15T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-15T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-15T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-15T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10270.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-16T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-16T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-16T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-16T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-16T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-16T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-16T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-16T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-16T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-16T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-16T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-16T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-16T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-16T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10110.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-18T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-18T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "napkin",
+      "amount": 1000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-18T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-18T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-18T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-18T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-18T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-18T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-18T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-18T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-18T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-18T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-18T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-18T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-19T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "container",
+      "amount": 300.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-19T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-19T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-19T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-19T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-19T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-19T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-19T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-19T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-19T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-19T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-19T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-19T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-19T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-19T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-19T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "tortilla",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-20T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-20T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-20T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-20T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-20T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-20T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-20T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-20T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-20T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-20T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-20T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-20T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10138.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-21T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_beef",
+      "amount": 10297.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-21T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-21T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-21T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-21T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-21T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-21T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-21T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-21T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-22T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-22T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-22T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-22T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-22T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-22T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-22T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-22T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-22T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-22T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 9765.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-23T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-23T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-23T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-23T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-23T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-23T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-23T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-23T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 6
+    },
+    {
+      "recorded_at": "2026-08-23T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-23T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-23T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 9711.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-25T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "wrap_paper",
+      "amount": 500.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-25T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-25T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-25T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-25T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-25T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-25T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-25T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-25T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-25T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-26T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-26T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-26T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-26T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-26T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-26T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-26T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-26T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-26T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-26T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "pita",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-27T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-27T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-27T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-27T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 10219.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-28T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-28T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-28T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T11:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-28T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-28T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T12:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-28T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-28T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T13:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-28T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-28T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T17:30:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-28T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-28T18:15:00+09:00",
+      "venue_type": "solo",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-28T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-28T19:00:00+09:00",
+      "venue_type": "solo",
+      "product_id": "kebab_wrap",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "tortilla",
+      "amount": 100.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-29T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-29T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-29T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-29T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-29T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 8
+    },
+    {
+      "recorded_at": "2026-08-29T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-29T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-29T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-29T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 7
+    },
+    {
+      "recorded_at": "2026-08-29T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-29T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-29T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "meat_chicken",
+      "amount": 9719.0,
+      "units": 1,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-30T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "rice",
+      "amount": 5000.0,
+      "units": null,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-30T10:00:00+09:00",
+      "type": "purchase",
+      "item_id": "sauce_yogurt",
+      "amount": 3.0,
+      "units": 3,
+      "estimated": false
+    },
+    {
+      "recorded_at": "2026-08-30T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-30T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-30T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-30T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T11:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-30T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-30T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-30T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T12:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "meat_only",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-30T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-30T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 2
+    },
+    {
+      "recorded_at": "2026-08-30T13:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 5
+    },
+    {
+      "recorded_at": "2026-08-30T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-30T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T17:30:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_mix",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-30T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-30T18:15:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    },
+    {
+      "recorded_at": "2026-08-30T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_sand",
+      "quantity": 4
+    },
+    {
+      "recorded_at": "2026-08-30T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "kebab_wrap",
+      "quantity": 3
+    },
+    {
+      "recorded_at": "2026-08-30T19:00:00+09:00",
+      "venue_type": "event",
+      "product_id": "rice_box",
+      "quantity": 1
+    }
+  ],
+  "config": {
+    "language": "ja"
+  }
+}
