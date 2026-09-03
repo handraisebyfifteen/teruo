@@ -46,6 +46,12 @@ def get_language() -> str:
     return _current
 
 
+def tool_label(name: str) -> str:
+    """A role/action name for the activity strip, or the raw tool name."""
+    variants = MESSAGES.get(f"tool_{name}")
+    return variants[_current] if variants else name
+
+
 def t(key: str, **kwargs: object) -> str:
     """Return the message for ``key`` in the current language, formatted."""
     template = MESSAGES[key][_current]
@@ -572,6 +578,85 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "teruo — inventory agent. Type exit to quit.",
         "ja": "teruo — 在庫管理エージェントです。終了するには exit と入力してください。",
     },
+
+    # --- Files handed to teruo (attachments.py) ---
+    "attachment_no_url": {
+        "en": "I can't open links. Save the page as a photo or a file and give me the file name.",
+        "ja": "リンクは開けません。写真かファイルとして保存して、ファイル名で渡してください。",
+    },
+    "attachment_not_found": {
+        "en": "No file named {path} here. Check the name, or give me the full path.",
+        "ja": "{path} というファイルが見つかりません。名前を確認するか、フルパスで渡してください。",
+    },
+    "attachment_too_large": {
+        "en": "{path} is too big (the limit is about {limit} MB). Use a smaller photo, or split the file.",
+        "ja": "{path} は大きすぎます（上限は約{limit}MB）。写真を小さくするか、ファイルを分けてください。",
+    },
+    "attachment_unreadable": {
+        "en": "Could not read {path}: {error}",
+        "ja": "{path} を読めませんでした: {error}",
+    },
+    "attachment_too_many": {
+        "en": "That's too many files at once. Up to {limit} per message, please.",
+        "ja": "一度に渡せるファイルが多すぎます。1回につき{limit}個までにしてください。",
+    },
+    "attachment_unsupported": {
+        "en": "I can't read {path}. Photos (png jpg gif webp) and documents (xlsx xls csv pdf docx doc html txt md) only.",
+        "ja": "{path} は読めない形式です。写真（png jpg gif webp）と文書（xlsx xls csv pdf docx doc html txt md）のみ対応しています。",
+    },
+    "attachment_default_text": {
+        "en": "Here is {names}. Read it and show me what you got before registering anything.",
+        "ja": "{names} を渡します。読み取った内容を見せてください。登録はその後で。",
+    },
+
+    # --- Web entry point (web.py) ---
+    "web_tagline": {
+        "en": "inventory agent for food trucks and street stalls",
+        "ja": "キッチンカー・屋台の在庫管理エージェント",
+    },
+    "web_placeholder": {
+        "en": "Type here — or drop a menu photo or a spreadsheet",
+        "ja": "ここに入力 — メニュー写真や表計算ファイルはドロップでも渡せます",
+    },
+    "web_send": {"en": "Send", "ja": "送信"},
+    "web_fact_badge": {"en": "calculated in Python", "ja": "Pythonが計算"},
+    "web_working": {"en": "working", "ja": "処理中"},
+    "web_drop_hint": {"en": "Drop to hand over", "ja": "ドロップで渡す"},
+    "web_busy": {
+        "en": "Still working on the previous message — one at a time.",
+        "ja": "前のメッセージを処理中です。1件ずつお願いします。",
+    },
+    "web_counseling_banner": {
+        "en": "Onboarding — registering this shop's setup. About ten minutes; progress is saved if you stop.",
+        "ja": "初回カウンセリング中 — お店の構成を登録しています。10分ほど。途中でやめても保存されます。",
+    },
+    "web_greeting": {
+        "en": "teruo is ready. Sales, stock counts, purchases — tell me as they happen.",
+        "ja": "teruoです。売上・棚卸し・仕入れ、その都度お知らせください。",
+    },
+    "web_disconnected": {
+        "en": "The connection dropped. Entries already made are saved; reload to carry on.",
+        "ja": "接続が切れました。入力済みの分は保存されています。再読み込みで続けられます。",
+    },
+
+    # Labels for the activity strip — what the owner sees while teruo works.
+    # Keyed by tool name; the three roles read as roles, not function names.
+    "tool_record_keeper": {"en": "Record keeper", "ja": "記録係"},
+    "tool_observer_check": {"en": "Observer", "ja": "観測係"},
+    "tool_record_sales": {"en": "Recording sales", "ja": "売上を記録"},
+    "tool_record_count": {"en": "Recording a stock count", "ja": "棚卸しを記録"},
+    "tool_record_purchase": {"en": "Recording a purchase", "ja": "仕入れを記録"},
+    "tool_record_unit_used": {"en": "Recording an empty unit", "ja": "使い切りを記録"},
+    "tool_get_stock_status": {"en": "Reading stock", "ja": "在庫を確認"},
+    "tool_get_sales_summary": {"en": "Totalling sales", "ja": "売上を集計"},
+    "tool_get_capacity": {"en": "Checking servings left", "ja": "残り食数を確認"},
+    "tool_get_monthly_reconciliation": {"en": "Monthly reconciliation", "ja": "月次突合"},
+    "tool_register_item": {"en": "Registering an item", "ja": "品目を登録"},
+    "tool_register_product": {"en": "Registering a product", "ja": "商品を登録"},
+    "tool_update_recipe": {"en": "Updating a recipe", "ja": "レシピを更新"},
+    "tool_update_item": {"en": "Updating an item", "ja": "品目を更新"},
+    "tool_delete_product": {"en": "Deleting a product", "ja": "商品を削除"},
+    "tool_update_config": {"en": "Updating settings", "ja": "設定を更新"},
 }
 
 # Fail at import if a translation is missing — never at the counter.

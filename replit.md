@@ -12,8 +12,10 @@ Japanese with English translations in docs/*.en.md.
 ## Run & Operate
 
 - `python main.py` — start the interactive CLI (onboarding runs if state is empty)
+- `python web.py` — the one-screen browser entry point on PORT (default 5000)
 - `python main.py --setup` — force the onboarding interview
 - `python main.py --lang ja` — switch to Japanese (remembered; `TERUO_LANG=ja` also works)
+- Type a file name on the prompt line to hand over a menu photo or a stocktake sheet
 - `INVENTORY_STATE_PATH=data/state.ja.json python main.py` — the Japanese demo shop
 - Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
   `AWS_DEFAULT_REGION` (`us-east-2`)
@@ -21,14 +23,17 @@ Japanese with English translations in docs/*.en.md.
 ## Stack
 
 - Python 3.12
+- FastAPI + uvicorn for the web entry point only (the CLI needs neither)
 - Strands Agents
 - Amazon Bedrock / Claude Sonnet
 - JSON file persistence; no database or web framework
 
 ## Where things live
 
-- CLI loop and counseling agent: `main.py`
+- CLI loop, counseling agent, shared `build_agent`: `main.py`
+- Web entry point (SSE stream, uploads): `web.py`; the single page: `web/index.html`
 - Operations agents (reporter / record keeper / observer, agents-as-tools): `agents.py`
+- File input (typed file names → image/document content blocks): `attachments.py`
 - Tool calculations: `tools.py`
 - Every user-facing string, English and Japanese side by side: `i18n.py` (`t("key")`)
 - Atomic JSON persistence: `store.py`
@@ -39,6 +44,24 @@ Japanese with English translations in docs/*.en.md.
 ## Architecture decisions
 
 - All arithmetic runs in Python tools, never in the model.
+- Menu photos and spreadsheets are read by handing the raw bytes to Bedrock as
+  Converse image/document content blocks (`attachments.py`); nothing is parsed
+  locally, so there is no openpyxl/OCR dependency. Anything read this way is a
+  proposal — the prompts require showing it and getting a yes before a tool is
+  called (design doc ch.9). URLs are refused in Python, not by the model:
+  external access stays out of scope (instructions appendix A).
+- The browser entry point is an entry point and nothing more. `web.py` calls
+  the same `main.build_agent`, and `tools.set_output_sink` (a ContextVar, so it
+  follows a sync tool onto the worker thread Strands runs it on) redirects
+  principle-3 facts from stdout to that request's SSE stream, verbatim and
+  tagged. tools.py / agents.py / store.py / i18n.py are unchanged by it. The
+  page shows tool and role activity inline so agents-as-tools is visible.
+  One shop, one conversation, one message at a time (asyncio lock — Strands
+  refuses concurrent invocations on one Agent).
+- A stranger reaching an already-configured teruo is a prompt-level guard, not
+  an auth feature: reads (stock, sales, reconciliation) are deliberately
+  passphrase-free for staff, so the reporter is told to stop before showing
+  figures when someone says they are new and point them at `--setup`.
 - Factual tool output (sales breakdown, count results, unit-used results,
   stock status, monthly reconciliation) prints directly to stdout from the
   tool; the LLM is told not to repeat it and only adds judgment. This keeps
@@ -70,11 +93,21 @@ Japanese with English translations in docs/*.en.md.
 ## User preferences
 
 - Do not add unrequested features beyond the supplied design document.
-- No web UI, no database, no Docker, no auth system, no external APIs.
+- No database, no Docker, no auth system, no external APIs. (The web UI
+  exclusion was lifted deliberately — see `web.py`; it adds no state, no
+  accounts and no dependencies beyond FastAPI/uvicorn.)
 
 ## Gotchas
 
 - Bedrock interaction requires the AWS credentials above.
+- Do not deploy as-is. `.replit` still targets autoscale, whose filesystem is
+  ephemeral: every restart or scale-to-zero resets `data/state.json` to the
+  committed demo shop, and multiple instances would each hold their own copy.
+  The demo runs from the workspace Run button, where the file persists
+  (decided 2026-09-03). Moving state to a database — or, at minimum, one JSON
+  blob in Replit Object Storage via `store.load_state`/`save_state` — is the
+  production step the design doc defers (ch.7 "今回やらないこと"), not a
+  pre-deadline task.
 - Keep secrets out of source files and do not create `.env`.
 - Dates must be generated in Python (`ZoneInfo("Asia/Tokyo")`), never by the model.
 

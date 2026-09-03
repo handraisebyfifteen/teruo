@@ -1,10 +1,14 @@
 [project]
 name = "repl-nix-workspace"
 version = "0.1.0"
-description = "teruo — inventory agent CLI for kebab food trucks"
+description = "teruo — inventory agent for food trucks and street stalls"
 requires-python = ">=3.11"
 dependencies = [
     "strands-agents==1.54.0",
+    # The web entry point (web.py). The CLI needs none of these.
+    "fastapi==0.141.1",
+    "uvicorn==0.52.4",
+    "python-multipart==0.0.32",
 ]
 
 [dependency-groups]

@@ -1,11 +1,29 @@
 modules = ["python-3.12"]
 
+# The Run button and the deployment both start the one-screen web entry point.
+# The CLI is still `python main.py` from the shell.
+run = "python web.py"
+
 [deployment]
+run = ["python", "web.py"]
 router = "application"
 deploymentTarget = "autoscale"
 
+[[ports]]
+localPort = 5000
+externalPort = 80
+
 [workflows]
 runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python web.py"
+waitForPort = 5000
 
 [agent]
 expertMode = true

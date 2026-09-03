@@ -878,8 +878,8 @@ get_stock_status / get_monthly_reconciliation can be used by anyone.
 |---|---|---|---|
 | Paste a note | Light | High | 1 |
 | CSV / spreadsheet | Medium | Medium | 2 |
-| Menu scan | Heavy (needs a screen) | High | 3 (if time allows) |
-| Delivery slip scan | Heavy | Low | Not doing |
+| Menu scan | Light (no screen needed after all) | High | Implemented |
+| Delivery slip scan | — | Low | No separate build (same path) |
 
 ### Paste a note (record_purchase)
 
@@ -902,7 +902,10 @@ Always confirm after reading. Never register silently.
  Kebab wrap ¥600
 ```
 
-Delivery slip scanning isn't implemented because pasting a note covers it.
+Once implemented, no screen was needed. Typing a file name on the CLI line
+hands over a photo or a spreadsheet (`attachments.py`). The model reads it
+directly, so no spreadsheet library and no OCR are involved. A delivery slip
+goes through the same path, so a separate "delivery slip scan" is moot.
 
 ## 10. Demo Setup (Kebab Food Truck)
 
