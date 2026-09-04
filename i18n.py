@@ -533,6 +533,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "{name}を削除しました。品目と売上履歴は残っています。",
     },
 
+    # --- reset_shop ---
+    "reset_confirm": {
+        "en": "Ready to set this shop aside: {items} items, {products} products, {history} records. Nothing is deleted — the file is kept under a dated name. Confirm with the owner, then call again with confirm=True.",
+        "ja": "この店を退避する準備ができました: 品目{items}・商品{products}・履歴{history}件。削除はせず、日付付きの名前でファイルを残します。店主に確認し、承認されたら confirm=True でもう一度呼び出してください。",
+    },
+    "reset_done": {
+        "en": "Set aside as {archive}. Starting fresh — the onboarding interview begins now.",
+        "ja": "{archive} として退避しました。まっさらの状態から、初回カウンセリングを始めます。",
+    },
+
     # --- update_config ---
     "config_nothing": {
         "en": "Specify what to set (new_passphrase or new_notify_email).",
@@ -657,6 +667,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "tool_update_item": {"en": "Updating an item", "ja": "品目を更新"},
     "tool_delete_product": {"en": "Deleting a product", "ja": "商品を削除"},
     "tool_update_config": {"en": "Updating settings", "ja": "設定を更新"},
+    "tool_reset_shop": {"en": "Resetting the shop", "ja": "店を初期化"},
 }
 
 # Fail at import if a translation is missing — never at the counter.

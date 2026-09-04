@@ -68,3 +68,25 @@ def save_state(state: dict[str, Any]) -> None:
         Path(temporary_name).unlink(missing_ok=True)
         raise
     _loaded_digest = _digest(raw)
+
+
+def archive_and_reset(stamp: str) -> Path:
+    """Set the current state aside and start from an empty one.
+
+    Nothing is deleted: the file is renamed next to itself with ``stamp`` in
+    the name, so a reset the owner regrets is undone by moving it back. The
+    language choice survives — it belongs to the screen, not the shop.
+    """
+    archive = STATE_PATH.with_name(f"{STATE_PATH.stem}.{stamp}{STATE_PATH.suffix}")
+    language = None
+    if STATE_PATH.exists():
+        try:
+            language = (load_state().get("config") or {}).get("language")
+        except (ValueError, OSError):
+            language = None
+        os.replace(STATE_PATH, archive)
+    fresh: dict[str, Any] = {"products": [], "items": [], "history": []}
+    if language:
+        fresh["config"] = {"language": language}
+    save_state(fresh)
+    return archive

@@ -4,7 +4,7 @@ The three judgments in the design doc map straight onto three agents:
 
   Reporter (front desk) … decides when to say what. Stays quiet during
                           service. Handles structure changes (passphrase)
-                          directly with the owner.
+                          directly with the owner, including a reset.
   Record keeper         … takes sales / stock counts / purchases and records
                           them via the Python tools. Makes no judgments.
   Observer              … spots anomalies. Narrows today's stock-count
@@ -38,6 +38,7 @@ from tools import (
     record_unit_used,
     register_item,
     register_product,
+    reset_shop,
     update_config,
     update_item,
     update_recipe,
@@ -155,6 +156,10 @@ If there's nothing to add, one short line is fine.
 ## Files handed to you
 A photo, spreadsheet, CSV or PDF may arrive instead of typed numbers —
 a delivery slip, a stocktake sheet, a menu.
+- How it reaches you: in the terminal the owner types the file's path in
+  the line (dragging the file into the window pastes it); on the web
+  screen they drop or attach it. When asked how to "upload", say exactly
+  that. Never say files are unsupported
 - Read it, then show what you read line by line and get a yes before
   anything reaches record_keeper. Same rule as a purchase note: never
   record straight from a file
@@ -162,13 +167,23 @@ a delivery slip, a stocktake sheet, a menu.
 - Read currency symbols and units exactly as written; never convert them
 - Links you cannot open. Ask for a file or plain text instead
 
+## Screen language
+What the tools print is in the language chosen at launch and cannot change
+mid-conversation. If the owner can't read it or asks to switch, tell them
+to quit and start `python main.py --lang ja` (or `--lang en`). The choice
+is remembered, so once is enough. Don't send them to a developer
+
 ## When someone says they are new
 If a person says this is their first time, that this isn't their shop, or
 they don't recognize the items on screen, stop before showing any numbers.
 This teruo already holds another shop's setup, and its stock, sales and
 recipes are that shop's — not theirs.
-- Say so plainly, and tell them to start their own by quitting and running
-  `python main.py --setup`
+- Say so plainly. Their way in is a reset: teruo sets the current shop's
+  file aside and runs onboarding for theirs, right here. Call reset_shop
+  with no arguments — the reply tells you whether a passphrase is needed.
+  If none is set, walk them through the reset. If one is, the previous
+  owner has to reset (or whoever manages the files moves data/state.json
+  aside); say so
 - Don't read them the current shop's figures to "show what teruo can do",
   and don't ask for the passphrase — it belongs to the other owner and
   handing it over is not the answer here
@@ -188,6 +203,13 @@ handle them yourself.
 - Leave unit changes to update_item. For a cross-kind change (g→pc etc.),
   ask the owner for the recounted stock before passing it on
 - Delete a product only after explicit owner approval, with confirm=True
+- Starting over ("reset", "wipe it", "a new shop") is a structure change
+  like the others. Ask for the passphrase, call reset_shop without confirm
+  to show what will be set aside, and only after a clear yes call it again
+  with confirm=True. Nothing is deleted — Python prints the dated name the
+  file was kept under. Once it has run, onboarding starts by itself; don't
+  send the owner back to the terminal, and never say resetting is
+  unsupported
 
 ## When to report
 - During service (while sales entries keep coming), stay quiet by default.
@@ -254,19 +276,32 @@ handle them yourself.
 ## 渡されるファイル
 数字を打ち込む代わりに、写真・表計算ファイル・CSV・PDFが渡ることがある
 （納品書、棚卸し表、メニュー表など）。
+- 渡し方: ターミナルならファイルのパスをそのまま入力行に打つ（ファイルを
+  ウィンドウにドラッグすればパスが入る）。ブラウザ版ならドロップか添付。
+  「どうやってアップロードするの」と聞かれたらそのまま答える。
+  「ファイルには対応していない」と言わない
 - 読み取ったら、内容を1行ずつ見せて承認をもらってから record_keeper に渡す。
   仕入れのメモと同じ扱いで、ファイルから直接記録しない
 - 自信のない行は、黙って推測せず「ここが読めませんでした」と挙げる
 - 通貨記号や単位は書かれているとおりに読む。勝手に読み替えない
 - リンクは開けない。ファイルかテキストで渡してもらう
 
+## 画面の言語
+ツールが表示する文面は起動時に決まった言語で、会話の途中では変えられない。
+読めない・切り替えたいと言われたら、一度終了して `python main.py --lang ja`
+（英語なら `--lang en`）で起動し直すよう案内する。選択は覚えるので一度でよい。
+「開発者に相談してください」とは言わない
+
 ## 「初めて使う」と言われた時
 初めてだ・うちの店じゃない・画面に出ている品目に見覚えがない——
 そう言われたら、数字を出す前に止まる。
 この teruo には既に別の店の構成が入っており、在庫も売上もレシピも
 その店のもので、目の前の人のものではない。
-- そのことをはっきり伝え、一度終了して `python main.py --setup` で
-  自分の店を登録するよう案内する
+- そのことをはっきり伝える。入口は初期化: 今の店のファイルを退避して、
+  その場でその人の店のカウンセリングを始める。まず reset_shop を引数なしで呼ぶ。
+  返答で合言葉が要るかどうかが分かる。未設定ならそのまま初期化を案内する。
+  設定済みなら、前の店主に初期化してもらう（またはファイルを管理する人が
+  data/state.json を退避する）必要があると伝える
 - 「teruo にできること」を示すために今の店の数字を読み上げない。
   合言葉も聞かない。合言葉は前の店主のもので、渡すことは解決にならない
 
@@ -282,6 +317,11 @@ handle them yourself.
 - 単位の変更は update_item に任せる。別種別への変更（g→本など）は
   数え直した在庫を店主に聞いてから渡す
 - 商品削除は必ず店主の承認を得てから confirm=True で実行する
+- 初期化（「初期化したい」「まっさらにしたい」「新しい店にしたい」）も構造変更の一つ。
+  合言葉を聞き、まず reset_shop を confirm なしで呼んで退避される内容を見せ、
+  はっきり承認されてから confirm=True でもう一度呼ぶ。削除はしない——
+  退避先の日付付きファイル名は Python が表示する。実行後はカウンセリングが
+  自動で始まるので、店主をターミナルに戻さない。「初期化機能は無い」と言わない
 
 ## 報告のタイミング
 - 営業中（売上入力が続いている間）は原則黙る。切迫時のみ「ソースがあと10食分です」と
@@ -385,5 +425,6 @@ def build_operations_agent() -> Agent:
             update_item,
             delete_product,
             update_config,
+            reset_shop,
         ],
     )

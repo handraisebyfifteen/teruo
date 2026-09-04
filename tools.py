@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 from strands import tool
 
 from i18n import t
-from store import STATE_LOCK, StateConflictError, load_state, save_state
+from store import STATE_LOCK, StateConflictError, archive_and_reset, load_state, save_state
 
 
 def _serialized(func):
@@ -1641,6 +1641,36 @@ def delete_product(
     if conflict := _save(state):
         return conflict
     return t("product_deleted", name=product["name"])
+
+
+@tool
+@_serialized
+def reset_shop(
+    confirm: bool = False,
+    passphrase: str = "",
+) -> str:
+    """Set this shop aside and start over with an empty one.
+
+    Call it first with no arguments: the reply says what would be set aside
+    and whether the passphrase is needed. Call again with confirm=True only
+    after the owner has clearly said yes. Nothing is deleted — the current
+    state file is renamed with a timestamp, and the onboarding interview
+    starts by itself afterwards.
+
+    Args:
+        confirm: True only once the owner has approved the reset.
+        passphrase: The owner's passphrase (required when one is set).
+    """
+    state = load_state()
+    if error := _check_passphrase(state, passphrase):
+        return error
+    items = len(state.get("items") or [])
+    products = len(state.get("products") or [])
+    history = len(state.get("history") or [])
+    if not confirm:
+        return t("reset_confirm", items=items, products=products, history=history)
+    archive = archive_and_reset(_now().strftime("%Y%m%d-%H%M%S"))
+    return _tell(t("reset_done", archive=archive.name))
 
 
 @tool

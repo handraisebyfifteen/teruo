@@ -13,8 +13,11 @@ Japanese with English translations in docs/*.en.md.
 
 - `python main.py` — start the interactive CLI (onboarding runs if state is empty)
 - `python web.py` — the one-screen browser entry point on PORT (default 5000)
-- `python main.py --setup` — force the onboarding interview
-- `python main.py --lang ja` — switch to Japanese (remembered; `TERUO_LANG=ja` also works)
+- `python main.py --setup` — force the onboarding interview (on top of the
+  current data; a real reset is "reset" in the conversation → `reset_shop`)
+- `python main.py --lang ja` — switch to Japanese (remembered in state.json).
+  `TERUO_LANG=ja` does the same without writing to state.json — use it in
+  Replit Secrets for a personal preference; the product default stays English
 - Type a file name on the prompt line to hand over a menu photo or a stocktake sheet
 - `INVENTORY_STATE_PATH=data/state.ja.json python main.py` — the Japanese demo shop
 - Required secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
@@ -61,7 +64,12 @@ Japanese with English translations in docs/*.en.md.
 - A stranger reaching an already-configured teruo is a prompt-level guard, not
   an auth feature: reads (stock, sales, reconciliation) are deliberately
   passphrase-free for staff, so the reporter is told to stop before showing
-  figures when someone says they are new and point them at `--setup`.
+  figures when someone says they are new and offer a reset instead.
+- Reset is a tool (`reset_shop`, passphrase + confirm), not a flag:
+  `store.archive_and_reset` renames `state.json` with a timestamp and writes
+  an empty state (keeping `config.language`). Both entry points check
+  `needs_counseling()` after every turn and swap in the onboarding agent
+  on the spot, so the owner never goes back to the terminal.
 - Factual tool output (sales breakdown, count results, unit-used results,
   stock status, monthly reconciliation) prints directly to stdout from the
   tool; the LLM is told not to repeat it and only adds judgment. This keeps
