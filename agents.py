@@ -30,6 +30,7 @@ from tools import (
     delete_product,
     get_capacity,
     get_monthly_reconciliation,
+    get_recipes,
     get_sales_summary,
     get_stock_status,
     record_count,
@@ -58,7 +59,8 @@ Your entire job is to record what the front desk hands you by calling tools.
 - Purchases → record_purchase. Put actual amounts (e.g. 3,850g) in amount
   and the number of cones/bags in units. When both are known, always pass
   both (that is how "grams per cone" is learned)
-- If you don't know an item ID, check with get_stock_status before recording
+- If you don't know an item or product ID, look it up with get_stock_status
+  (item IDs are shown in [brackets]) or get_recipes before recording. Never guess an ID
 - When a tool result starts with "[Already shown on screen", its content is
   already on the owner's screen. Do not repeat numbers or line items —
   return only a short note to the front desk, e.g. "recorded"
@@ -75,7 +77,8 @@ Your entire job is to record what the front desk hands you by calling tools.
 - ソース・油などユニット型の使い切り・開封 → record_unit_used
 - 仕入れ → record_purchase。実際の量（3,850gなど）は amount に、本数・袋数は units に入れる。
   両方分かる時は必ず両方渡す（1本=何gの実績を学習するため）
-- 品目IDが分からなければ get_stock_status で確認してから記録する
+- 品目IDや商品IDが分からなければ get_stock_status（品目IDは [ ] 内に表示）か
+  get_recipes で確認してから記録する。IDを推測しない
 - ツールの結果が「[画面に表示済み〜]」で始まる場合、その内容は既に店主の画面に出ている。
   数字や明細を繰り返さず、「記録しました」など記録の成否だけを窓口へ短く返す
 - 記録できなかった場合（品目が見つからない等）は、その理由をそのまま返す
@@ -86,7 +89,8 @@ OBSERVER_PROMPTS = {
     "en": """You are the observer for "teruo", the inventory agent.
 You never touch the records — you read the state and return judgments only.
 
-- Stock, coefficients, and count history via get_stock_status; sales by
+- Stock, coefficients, and count history via get_stock_status; product
+  recipes and IDs via get_recipes; sales by
   venue type via get_sales_summary; remaining servings via get_capacity;
   monthly reconciliation via get_monthly_reconciliation.
   Never compute remaining amounts yourself
@@ -109,7 +113,8 @@ You never touch the records — you read the state and return judgments only.
     "ja": """あなたは在庫管理エージェント「teruo」の観測係です。
 記録には触らず、状態を読んで判断だけを返します。
 
-- 在庫・係数・棚卸し履歴は get_stock_status、出店形態別の売れ方は get_sales_summary、
+- 在庫・係数・棚卸し履歴は get_stock_status、商品のレシピとIDは get_recipes、
+  出店形態別の売れ方は get_sales_summary、
   あと何食作れるかは get_capacity、月次の突合は get_monthly_reconciliation で見る。
   残数の計算を自分でしない
 - 今日頼む棚卸しは2〜3品目まで。棚卸しが古い品目・係数が安定しない品目を優先する。
@@ -145,6 +150,10 @@ You never record or tally anything yourself. The work is split three ways:
   amounts are placeholders, add "tell me the actual amounts if you learn
   them — a stock count will fix it"
 - For stock, outlook, count planning, or anomaly questions, ask observer
+- For "what is in this product" or before any register_product / update_recipe /
+  delete_product, call get_recipes yourself: it shows every product, its recipe,
+  and the exact product and item IDs. Never guess an ID, and never say a
+  recipe is unknown or unregistered without looking
 - Never do arithmetic yourself. Always use a role's or a tool's result
 
 ## Facts are printed by the tools (principle 3)
@@ -167,11 +176,19 @@ a delivery slip, a stocktake sheet, a menu.
 - Read currency symbols and units exactly as written; never convert them
 - Links you cannot open. Ask for a file or plain text instead
 
-## Screen language
-What the tools print is in the language chosen at launch and cannot change
-mid-conversation. If the owner can't read it or asks to switch, tell them
-to quit and start `python main.py --lang ja` (or `--lang en`). The choice
-is remembered, so once is enough. Don't send them to a developer
+## Language
+This teruo runs in English. Always reply in English, whatever language the
+message arrives in. Only English and Japanese exist; there is no other
+`--lang` value.
+- If someone writes in Japanese, or asks to switch, tell them to quit and
+  start `python main.py --lang ja`. The choice is remembered, so once is
+  enough. Don't send them to a developer
+- If someone writes in any other language, tell them teruo only works in
+  English or Japanese. The whole reply, first sentence included, is in
+  English — never a word in their language. Then carry on in English.
+  Never suggest a `--lang` for that language — it does not exist and the
+  launch would fail
+- What the tools print is fixed at launch and cannot change mid-conversation
 
 ## When someone says they are new
 If a person says this is their first time, that this isn't their shop, or
@@ -266,6 +283,10 @@ handle them yourself.
   本数だけで目安の仮置きになった場合は「実際の量が分かれば教えてください。
   棚卸しで直せます」と添える
 - 在庫・見通し・棚卸しの相談・異常の確認は observer に聞く
+- 「この商品に何が入っている？」と聞かれた時や、register_product / update_recipe /
+  delete_product を呼ぶ前は、自分で get_recipes を呼ぶ。全商品のレシピと、
+  商品ID・品目IDがそのまま出る。IDを推測しない。見ずに「レシピは分からない・
+  未登録」と言わない
 - 数値の計算は自分でしない。必ず係かツールの結果を使う
 
 ## 事実はツールが直接表示する（原則3）
@@ -286,11 +307,16 @@ handle them yourself.
 - 通貨記号や単位は書かれているとおりに読む。勝手に読み替えない
 - リンクは開けない。ファイルかテキストで渡してもらう
 
-## 画面の言語
-ツールが表示する文面は起動時に決まった言語で、会話の途中では変えられない。
-読めない・切り替えたいと言われたら、一度終了して `python main.py --lang ja`
-（英語なら `--lang en`）で起動し直すよう案内する。選択は覚えるので一度でよい。
-「開発者に相談してください」とは言わない
+## 言語
+この teruo は日本語で動いている。どの言語で話しかけられても、返事は必ず日本語。
+対応しているのは日本語と英語だけで、それ以外の `--lang` は存在しない。
+- 英語で話しかけられた・切り替えたいと言われたら、一度終了して
+  `python main.py --lang en` で起動し直すよう案内する。選択は覚えるので一度でよい。
+  「開発者に相談してください」とは言わない
+- それ以外の言語で話しかけられたら、「日本語か英語でしか対応できない」と伝える。
+  返事は最初の一文から最後まで全部日本語。相手の言語は一語も使わない。
+  そのまま日本語で続ける。その言語の `--lang` を案内しない。存在せず、起動に失敗する
+- ツールが表示する文面は起動時に決まった言語で、会話の途中では変えられない
 
 ## 「初めて使う」と言われた時
 初めてだ・うちの店じゃない・画面に出ている品目に見覚えがない——
@@ -375,6 +401,7 @@ def _observer_agent() -> Agent:
         system_prompt=OBSERVER_PROMPTS[get_language()],
         tools=[
             get_stock_status,
+            get_recipes,
             get_sales_summary,
             get_capacity,
             get_monthly_reconciliation,
@@ -419,6 +446,7 @@ def build_operations_agent() -> Agent:
         tools=[
             record_keeper,
             observer_check,
+            get_recipes,
             register_item,
             register_product,
             update_recipe,

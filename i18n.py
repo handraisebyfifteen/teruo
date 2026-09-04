@@ -94,6 +94,27 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": 'Product ID "{product_id}" was not found.',
         "ja": "商品ID「{product_id}」は見つかりません。",
     },
+    "known_item_ids": {
+        "en": "Registered item IDs: {ids}",
+        "ja": "登録済みの品目ID: {ids}",
+    },
+    "known_product_ids": {
+        "en": "Registered product IDs: {ids}",
+        "ja": "登録済みの商品ID: {ids}",
+    },
+    "known_ids_none": {"en": "(none)", "ja": "（なし）"},
+
+    # --- get_recipes ---
+    "recipes_none": {"en": "No products registered.", "ja": "商品が登録されていません。"},
+    "recipes_line": {
+        "en": "- {name} [{id}] ¥{price}: {recipe}",
+        "ja": "- {name} [{id}] ¥{price}: {recipe}",
+    },
+    "recipes_ingredient": {"en": "{name} [{id}] {amount}", "ja": "{name} [{id}] {amount}"},
+    "recipes_ingredient_missing": {
+        "en": "{id} (unregistered item)",
+        "ja": "{id}（未登録の品目）",
+    },
 
     # --- learning phase labels ---
     "growth_fixed": {"en": "coefficient fixed", "ja": "係数固定"},
@@ -238,8 +259,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     # --- record_purchase ---
     "purchase_empty": {"en": "The purchase list is empty.", "ja": "仕入れ明細が空です。"},
     "purchase_item_not_found": {
-        "en": 'Item ID "{item_id}" was not found. Register it first with register_item.',
-        "ja": "品目ID「{item_id}」は見つかりません。先に register_item で登録してください。",
+        "en": 'Item ID "{item_id}" was not found. Check the ID below; register it with register_item only if it is really a new item.',
+        "ja": "品目ID「{item_id}」は見つかりません。下のID一覧を確認し、本当に新しい品目の時だけ register_item で登録してください。",
     },
     "purchase_needs_amount_or_units": {
         "en": "{name}: needs either amount or units.",
@@ -274,16 +295,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "、開封中の1{unit}は{used}食目",
     },
     "status_line_unit": {
-        "en": "- {name}: {stock}, {coef}, {growth}{opened_note}, last counted {last}",
-        "ja": "- {name}: {stock}、{coef}、{growth}{opened_note}、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, {coef}, {growth}{opened_note}, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、{coef}、{growth}{opened_note}、最終棚卸し {last}",
     },
     "status_line_count": {
-        "en": "- {name}: {stock}, coefficient fixed, last counted {last}",
-        "ja": "- {name}: {stock}、係数固定、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, coefficient fixed, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、係数固定、最終棚卸し {last}",
     },
     "status_line_weight": {
-        "en": "- {name}: {stock}, coefficient {coef:.2f}, {growth}, last counted {last}",
-        "ja": "- {name}: {stock}、係数 {coef:.2f}、{growth}、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, coefficient {coef:.2f}, {growth}, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、係数 {coef:.2f}、{growth}、最終棚卸し {last}",
     },
     "status_recent_changes": {"en": "Recent settings changes:", "ja": "直近の設定変更:"},
 
@@ -423,8 +444,8 @@ MESSAGES: dict[str, dict[str, str]] = {
 
     # --- update_recipe ---
     "item_unregistered": {
-        "en": 'Item ID "{item_id}" is unregistered. Register it first with register_item.',
-        "ja": "品目ID「{item_id}」は未登録です。先に register_item で登録してください。",
+        "en": 'Item ID "{item_id}" is unregistered. Check the ID below; register it with register_item only if it is really a new item.',
+        "ja": "品目ID「{item_id}」は未登録です。下のID一覧を確認し、本当に新しい品目の時だけ register_item で登録してください。",
     },
     "recipe_qty_nonnegative": {
         "en": "qty must be zero or more (0 removes the ingredient).",
@@ -660,6 +681,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "tool_get_stock_status": {"en": "Reading stock", "ja": "在庫を確認"},
     "tool_get_sales_summary": {"en": "Totalling sales", "ja": "売上を集計"},
     "tool_get_capacity": {"en": "Checking servings left", "ja": "残り食数を確認"},
+    "tool_get_recipes": {"en": "Reading recipes", "ja": "レシピを確認"},
     "tool_get_monthly_reconciliation": {"en": "Monthly reconciliation", "ja": "月次突合"},
     "tool_register_item": {"en": "Registering an item", "ja": "品目を登録"},
     "tool_register_product": {"en": "Registering a product", "ja": "商品を登録"},
