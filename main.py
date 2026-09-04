@@ -8,14 +8,19 @@ A typed line may name local files — a menu photo, a stocktake sheet — which
 attachments.py turns into content blocks the model reads directly. Links are
 refused there, in Python: teruo has no external access (instructions appendix A).
 
-Language: English by default. ``python main.py --lang ja`` (or TERUO_LANG=ja)
-switches the whole product — prompts, tool output, CLI — to Japanese and
-remembers the choice in state.json (config.language), so later launches
-need no flag.
+Language: English by default. ``python main.py --lang ja`` switches the whole
+product — prompts, tool output, CLI — to Japanese and remembers the choice in
+state.json (config.language), so later launches need no flag. TERUO_LANG=ja
+does the same for one environment without touching state.json.
+
+Starting over happens in the conversation, not at the terminal: "reset"
+(passphrase, then a yes) sets the current shop's file aside and the loop
+below notices the empty state and moves straight into onboarding.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
 
@@ -29,6 +34,7 @@ from tools import (
     delete_product,
     get_capacity,
     get_monthly_reconciliation,
+    get_recipes,
     get_sales_summary,
     get_stock_status,
     record_count,
@@ -42,6 +48,11 @@ from tools import (
     update_recipe,
 )
 
+# Strands logs a WARNING whenever the model calls a no-argument tool with an
+# empty input block (harmless: it defaults to {}). Unconfigured logging sends
+# that to the owner's screen, between teruo's lines. Errors still show.
+logging.getLogger("strands").setLevel(logging.ERROR)
+
 # Onboarding is one continuous registration flow, so it stays a single agent
 # (the role split applies to everyday operation only — instructions step 5.5).
 COUNSELING_TOOLS = [
@@ -52,6 +63,7 @@ COUNSELING_TOOLS = [
     get_stock_status,
     get_sales_summary,
     get_capacity,
+    get_recipes,
     get_monthly_reconciliation,
     register_item,
     register_product,
@@ -81,6 +93,9 @@ You are about to run the onboarding interview and register the shop's setup thro
 ## Files the owner hands you
 The owner can give you a menu photo, a spreadsheet, a CSV or a PDF instead of
 typing everything out — read it and use it to fill in the stages below.
+- How it reaches you: in the terminal they type the file's path in the line
+  (dragging the file into the window pastes it); on the web screen they drop
+  or attach it. If asked how to "upload", say exactly that
 - Never register straight from a file. Show what you read, line by line, and
   get a yes first. A misread price registered silently is worse than no file
 - Say which lines you are unsure of rather than quietly guessing
@@ -178,6 +193,9 @@ Be polite and concise.
 ## 店主から渡されるファイル
 店主はメニューの写真・表計算ファイル・CSV・PDFを渡してくることがある。
 全部を口で言わせる代わりに読み取り、以下の段階を埋めるのに使う。
+- 渡し方: ターミナルならファイルのパスをそのまま入力行に打つ（ファイルを
+  ウィンドウにドラッグすればパスが入る）。ブラウザ版ならドロップか添付。
+  「どうやってアップロードするの」と聞かれたらそのまま答える
 - ファイルから直接登録しない。読み取った内容を1行ずつ見せ、承認をもらってから登録する。
   読み違えた値段を黙って登録する方が、ファイルを使わないより悪い
 - 自信のない行は、黙って推測せず「ここが読めませんでした」と言う
@@ -280,15 +298,22 @@ def _remember_language(language: str) -> None:
 
 
 def resolve_language(argv: list[str]) -> str:
-    """--lang flag > TERUO_LANG > config.language in state.json > English."""
-    requested = _language_flag(argv) or os.environ.get("TERUO_LANG")
+    """--lang flag > TERUO_LANG > config.language in state.json > English.
+
+    The flag is remembered in state.json; the environment variable is not."""
+    flag = _language_flag(argv)
+    requested = flag or os.environ.get("TERUO_LANG")
     if requested:
         language = normalize_language(requested)
         if language is None:
             print(t("cli_bad_language", value=requested), file=sys.stderr)
             raise SystemExit(1)
         set_language(language)
-        _remember_language(language)
+        # Only an explicit flag is the shop's choice. TERUO_LANG is the
+        # developer's own environment; writing it into state.json would
+        # commit a personal preference as the product's default.
+        if flag:
+            _remember_language(language)
         return language
     try:
         stored = (load_state().get("config") or {}).get("language")
@@ -358,6 +383,17 @@ def main() -> None:
             agent(prompt)
         except Exception as error:
             print(t("cli_error", error=error), file=sys.stderr)
+            continue
+        # A reset empties the state mid-conversation. Rather than sending the
+        # owner back to the terminal, hand over to onboarding right here.
+        if not counseling and needs_counseling():
+            counseling = True
+            agent = build_agent(counseling)
+            print(t("cli_counseling_start"))
+            try:
+                agent(t("cli_counseling_kickoff"))
+            except Exception as error:
+                print(t("cli_error", error=error), file=sys.stderr)
 
 
 if __name__ == "__main__":

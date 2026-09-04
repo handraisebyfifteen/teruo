@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 from strands import tool
 
 from i18n import t
-from store import STATE_LOCK, StateConflictError, load_state, save_state
+from store import STATE_LOCK, StateConflictError, archive_and_reset, load_state, save_state
 
 
 def _serialized(func):
@@ -190,6 +190,24 @@ def _tell(text: str) -> str:
     return text
 
 
+def _known_ids(records: list[dict[str, Any]]) -> str:
+    ids = [r["id"] for r in records if r.get("active", True)]
+    return ", ".join(ids) if ids else t("known_ids_none")
+
+
+def _item_missing(state: dict[str, Any], key: str, item_id: str) -> str:
+    """An item-ID error plus the registered IDs, so a typo is fixed in one
+    step instead of guessed at."""
+    return f'{t(key, item_id=item_id)}\n{t("known_item_ids", ids=_known_ids(state["items"]))}'
+
+
+def _product_missing(state: dict[str, Any], product_id: str) -> str:
+    return (
+        f'{t("product_not_found", product_id=product_id)}\n'
+        f'{t("known_product_ids", ids=_known_ids(state["products"]))}'
+    )
+
+
 def _find(records: list[dict[str, Any]], record_id: str) -> dict[str, Any] | None:
     return next((record for record in records if record["id"] == record_id), None)
 
@@ -357,7 +375,7 @@ def record_sales(product_id: str, quantity: int, venue_type: str = "solo") -> st
     state = load_state()
     product = _find(state["products"], product_id)
     if product is None:
-        return t("product_not_found", product_id=product_id)
+        return _product_missing(state, product_id)
 
     changes: list[str] = []
     notes: list[str] = []
@@ -458,7 +476,7 @@ def record_count(item_id: str, actual_stock: float) -> str:
     state = load_state()
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return t("item_not_found", item_id=item_id)
+        return _item_missing(state, "item_not_found", item_id)
 
     ctype = _consumption_type(item)
     counted_at = _now_iso()
@@ -623,7 +641,7 @@ def record_unit_used(item_id: str, opened_next: bool = True) -> str:
     state = load_state()
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return t("item_not_found", item_id=item_id)
+        return _item_missing(state, "item_not_found", item_id)
     if _consumption_type(item) != "unit":
         return t("unit_not_unit_type", name=item["name"])
 
@@ -726,7 +744,7 @@ def record_purchase(purchases: list[dict]) -> str:
         item_id = entry.get("item_id")
         item = _find(state["items"], item_id) if item_id else None
         if item is None or not item.get("active", True):
-            return t("purchase_item_not_found", item_id=item_id)
+            return _item_missing(state, "purchase_item_not_found", item_id)
 
         amount = entry.get("amount")
         units = entry.get("units")
@@ -828,6 +846,7 @@ def get_stock_status() -> str:
                 t(
                     "status_line_unit",
                     name=item["name"],
+                    id=item["id"],
                     stock=_display_stock(item),
                     coef=coef_display,
                     growth=_growth_label(item),
@@ -840,6 +859,7 @@ def get_stock_status() -> str:
                 t(
                     "status_line_count",
                     name=item["name"],
+                    id=item["id"],
                     stock=_display_stock(item),
                     last=last_display,
                 )
@@ -849,6 +869,7 @@ def get_stock_status() -> str:
                 t(
                     "status_line_weight",
                     name=item["name"],
+                    id=item["id"],
                     stock=_display_stock(item),
                     coef=float(item["coefficient"]),
                     growth=_growth_label(item),
@@ -910,6 +931,46 @@ def get_sales_summary() -> str:
             )
         blocks.append("\n".join(lines))
     return "\n\n".join(blocks)
+
+
+@tool
+@_serialized
+def get_recipes() -> str:
+    """Return every product with its ID, price, and recipe (ingredient name,
+    item ID, amount per serving).
+
+    Use it to see what a product is made of, or to look up the product and
+    item IDs needed by update_recipe / record_sales — never guess an ID.
+    """
+    state = load_state()
+    if not state["products"]:
+        return t("recipes_none")
+    lines: list[str] = []
+    for product in state["products"]:
+        parts = []
+        for ingredient in product["recipe"]:
+            item = _find(state["items"], ingredient["item_id"])
+            if item is None:
+                parts.append(t("recipes_ingredient_missing", id=ingredient["item_id"]))
+            else:
+                parts.append(
+                    t(
+                        "recipes_ingredient",
+                        name=item["name"],
+                        id=item["id"],
+                        amount=_amount(float(ingredient["qty"]), item["unit"]),
+                    )
+                )
+        lines.append(
+            t(
+                "recipes_line",
+                name=product["name"],
+                id=product["id"],
+                price=product["price"],
+                recipe=_join(parts),
+            )
+        )
+    return _tell("\n".join(lines))
 
 
 @tool
@@ -1313,10 +1374,10 @@ def update_recipe(
         return error
     product = _find(state["products"], product_id)
     if product is None:
-        return t("product_not_found", product_id=product_id)
+        return _product_missing(state, product_id)
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return t("item_unregistered", item_id=item_id)
+        return _item_missing(state, "item_unregistered", item_id)
     if qty < 0:
         return t("recipe_qty_nonnegative")
 
@@ -1415,7 +1476,7 @@ def update_item(
         return error
     item = _find(state["items"], item_id)
     if item is None or not item.get("active", True):
-        return t("item_not_found", item_id=item_id)
+        return _item_missing(state, "item_not_found", item_id)
     if not new_name and not new_unit and not new_purchase_unit and new_unit_weight <= 0:
         return t("update_item_nothing")
 
@@ -1627,7 +1688,7 @@ def delete_product(
         return error
     product = _find(state["products"], product_id)
     if product is None:
-        return t("product_not_found", product_id=product_id)
+        return _product_missing(state, product_id)
     if not confirm:
         return t("delete_confirm", name=product["name"], price=product["price"])
     state["products"] = [p for p in state["products"] if p["id"] != product_id]
@@ -1641,6 +1702,36 @@ def delete_product(
     if conflict := _save(state):
         return conflict
     return t("product_deleted", name=product["name"])
+
+
+@tool
+@_serialized
+def reset_shop(
+    confirm: bool = False,
+    passphrase: str = "",
+) -> str:
+    """Set this shop aside and start over with an empty one.
+
+    Call it first with no arguments: the reply says what would be set aside
+    and whether the passphrase is needed. Call again with confirm=True only
+    after the owner has clearly said yes. Nothing is deleted — the current
+    state file is renamed with a timestamp, and the onboarding interview
+    starts by itself afterwards.
+
+    Args:
+        confirm: True only once the owner has approved the reset.
+        passphrase: The owner's passphrase (required when one is set).
+    """
+    state = load_state()
+    if error := _check_passphrase(state, passphrase):
+        return error
+    items = len(state.get("items") or [])
+    products = len(state.get("products") or [])
+    history = len(state.get("history") or [])
+    if not confirm:
+        return t("reset_confirm", items=items, products=products, history=history)
+    archive = archive_and_reset(_now().strftime("%Y%m%d-%H%M%S"))
+    return _tell(t("reset_done", archive=archive.name))
 
 
 @tool

@@ -103,6 +103,10 @@ python main.py
 - With no items and no products registered (an empty `data/state.json`),
   the onboarding interview starts
 - `python main.py --setup` forces the onboarding interview to run again
+  (on top of the current data — it does not clear anything)
+- To start over as a new shop, say "reset" in the conversation. teruo asks
+  for the passphrase (if one is set) and a yes, sets the current
+  `data/state.json` aside under a dated name, and runs onboarding right there
 - Type `exit` or `quit` to leave
 
 ## The one-screen version
@@ -164,7 +168,9 @@ python main.py --lang ja
 ```
 
 The choice is saved to `data/state.json` (`config.language`), so later
-launches need no flag. `TERUO_LANG=ja` works as well. `data/state.ja.json`
+launches need no flag. `TERUO_LANG=ja` does the same for one environment
+without writing to `state.json` (a developer's own preference stays out of
+the repo). `data/state.ja.json`
 is the same demo shop with Japanese item names and counters (枚 / 本 / 個):
 
 ```bash

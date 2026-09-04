@@ -138,25 +138,36 @@ async def _turn(prompt: Any, notes: list[str]):
 
         token = tools.set_output_sink(sink)
 
-        async def drive() -> None:
-            try:
-                async for event in _agent.stream_async(prompt):
-                    started = (
-                        event.get("event", {})
-                        .get("contentBlockStart", {})
-                        .get("start", {})
-                        .get("toolUse")
+        async def relay(agent: Any, text: Any) -> None:
+            async for event in agent.stream_async(text):
+                started = (
+                    event.get("event", {})
+                    .get("contentBlockStart", {})
+                    .get("start", {})
+                    .get("toolUse")
+                )
+                if started:
+                    await queue.put(
+                        {
+                            "type": "tool",
+                            "name": started["name"],
+                            "label": tool_label(started["name"]),
+                        }
                     )
-                    if started:
-                        await queue.put(
-                            {
-                                "type": "tool",
-                                "name": started["name"],
-                                "label": tool_label(started["name"]),
-                            }
-                        )
-                    if event.get("data"):
-                        await queue.put({"type": "text", "delta": event["data"]})
+                if event.get("data"):
+                    await queue.put({"type": "text", "delta": event["data"]})
+
+        async def drive() -> None:
+            global _agent, _counseling
+            try:
+                await relay(_agent, prompt)
+                # A reset emptied the state: same as the CLI, hand over to
+                # onboarding in this very turn instead of asking for a reload.
+                if not _counseling and needs_counseling():
+                    _counseling = True
+                    _agent = build_agent(_counseling)
+                    await queue.put({"type": "mode", "counseling": True})
+                    await relay(_agent, t("cli_counseling_kickoff"))
             except Exception as error:  # surfaced on screen, not swallowed
                 await queue.put({"type": "error", "text": t("cli_error", error=error)})
             finally:

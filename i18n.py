@@ -94,6 +94,27 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": 'Product ID "{product_id}" was not found.',
         "ja": "商品ID「{product_id}」は見つかりません。",
     },
+    "known_item_ids": {
+        "en": "Registered item IDs: {ids}",
+        "ja": "登録済みの品目ID: {ids}",
+    },
+    "known_product_ids": {
+        "en": "Registered product IDs: {ids}",
+        "ja": "登録済みの商品ID: {ids}",
+    },
+    "known_ids_none": {"en": "(none)", "ja": "（なし）"},
+
+    # --- get_recipes ---
+    "recipes_none": {"en": "No products registered.", "ja": "商品が登録されていません。"},
+    "recipes_line": {
+        "en": "- {name} [{id}] ¥{price}: {recipe}",
+        "ja": "- {name} [{id}] ¥{price}: {recipe}",
+    },
+    "recipes_ingredient": {"en": "{name} [{id}] {amount}", "ja": "{name} [{id}] {amount}"},
+    "recipes_ingredient_missing": {
+        "en": "{id} (unregistered item)",
+        "ja": "{id}（未登録の品目）",
+    },
 
     # --- learning phase labels ---
     "growth_fixed": {"en": "coefficient fixed", "ja": "係数固定"},
@@ -238,8 +259,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     # --- record_purchase ---
     "purchase_empty": {"en": "The purchase list is empty.", "ja": "仕入れ明細が空です。"},
     "purchase_item_not_found": {
-        "en": 'Item ID "{item_id}" was not found. Register it first with register_item.',
-        "ja": "品目ID「{item_id}」は見つかりません。先に register_item で登録してください。",
+        "en": 'Item ID "{item_id}" was not found. Check the ID below; register it with register_item only if it is really a new item.',
+        "ja": "品目ID「{item_id}」は見つかりません。下のID一覧を確認し、本当に新しい品目の時だけ register_item で登録してください。",
     },
     "purchase_needs_amount_or_units": {
         "en": "{name}: needs either amount or units.",
@@ -274,16 +295,16 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "、開封中の1{unit}は{used}食目",
     },
     "status_line_unit": {
-        "en": "- {name}: {stock}, {coef}, {growth}{opened_note}, last counted {last}",
-        "ja": "- {name}: {stock}、{coef}、{growth}{opened_note}、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, {coef}, {growth}{opened_note}, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、{coef}、{growth}{opened_note}、最終棚卸し {last}",
     },
     "status_line_count": {
-        "en": "- {name}: {stock}, coefficient fixed, last counted {last}",
-        "ja": "- {name}: {stock}、係数固定、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, coefficient fixed, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、係数固定、最終棚卸し {last}",
     },
     "status_line_weight": {
-        "en": "- {name}: {stock}, coefficient {coef:.2f}, {growth}, last counted {last}",
-        "ja": "- {name}: {stock}、係数 {coef:.2f}、{growth}、最終棚卸し {last}",
+        "en": "- {name} [{id}]: {stock}, coefficient {coef:.2f}, {growth}, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、係数 {coef:.2f}、{growth}、最終棚卸し {last}",
     },
     "status_recent_changes": {"en": "Recent settings changes:", "ja": "直近の設定変更:"},
 
@@ -423,8 +444,8 @@ MESSAGES: dict[str, dict[str, str]] = {
 
     # --- update_recipe ---
     "item_unregistered": {
-        "en": 'Item ID "{item_id}" is unregistered. Register it first with register_item.',
-        "ja": "品目ID「{item_id}」は未登録です。先に register_item で登録してください。",
+        "en": 'Item ID "{item_id}" is unregistered. Check the ID below; register it with register_item only if it is really a new item.',
+        "ja": "品目ID「{item_id}」は未登録です。下のID一覧を確認し、本当に新しい品目の時だけ register_item で登録してください。",
     },
     "recipe_qty_nonnegative": {
         "en": "qty must be zero or more (0 removes the ingredient).",
@@ -531,6 +552,16 @@ MESSAGES: dict[str, dict[str, str]] = {
     "product_deleted": {
         "en": "Deleted {name}. Its items and sales history are still there.",
         "ja": "{name}を削除しました。品目と売上履歴は残っています。",
+    },
+
+    # --- reset_shop ---
+    "reset_confirm": {
+        "en": "Ready to set this shop aside: {items} items, {products} products, {history} records. Nothing is deleted — the file is kept under a dated name. Confirm with the owner, then call again with confirm=True.",
+        "ja": "この店を退避する準備ができました: 品目{items}・商品{products}・履歴{history}件。削除はせず、日付付きの名前でファイルを残します。店主に確認し、承認されたら confirm=True でもう一度呼び出してください。",
+    },
+    "reset_done": {
+        "en": "Set aside as {archive}. Starting fresh — the onboarding interview begins now.",
+        "ja": "{archive} として退避しました。まっさらの状態から、初回カウンセリングを始めます。",
     },
 
     # --- update_config ---
@@ -650,6 +681,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "tool_get_stock_status": {"en": "Reading stock", "ja": "在庫を確認"},
     "tool_get_sales_summary": {"en": "Totalling sales", "ja": "売上を集計"},
     "tool_get_capacity": {"en": "Checking servings left", "ja": "残り食数を確認"},
+    "tool_get_recipes": {"en": "Reading recipes", "ja": "レシピを確認"},
     "tool_get_monthly_reconciliation": {"en": "Monthly reconciliation", "ja": "月次突合"},
     "tool_register_item": {"en": "Registering an item", "ja": "品目を登録"},
     "tool_register_product": {"en": "Registering a product", "ja": "商品を登録"},
@@ -657,6 +689,7 @@ MESSAGES: dict[str, dict[str, str]] = {
     "tool_update_item": {"en": "Updating an item", "ja": "品目を更新"},
     "tool_delete_product": {"en": "Deleting a product", "ja": "商品を削除"},
     "tool_update_config": {"en": "Updating settings", "ja": "設定を更新"},
+    "tool_reset_shop": {"en": "Resetting the shop", "ja": "店を初期化"},
 }
 
 # Fail at import if a translation is missing — never at the counter.

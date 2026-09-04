@@ -310,6 +310,11 @@ function apply(event, node, chips, working, said) {
     node.append(el("div", "note", event.text));
   } else if (event.type === "error") {
     node.append(el("div", "note bad", event.text));
+  } else if (event.type === "mode") {
+    // The shop was reset mid-conversation and onboarding took over.
+    const banner = document.getElementById("banner");
+    banner.textContent = strings.web_counseling_banner;
+    banner.classList.toggle("on", event.counseling);
   }
   toBottom();
 }
