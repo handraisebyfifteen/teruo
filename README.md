@@ -202,15 +202,21 @@ money column, and the export is not a full set of books.
 
 ## Language
 
-teruo speaks English by default. To run it in Japanese — prompts, tool
-output, and the CLI — pass `--lang ja` once:
+teruo answers in the language the owner writes in. Write to it in Japanese
+and it switches — prompts, tool output, and the web screen's own wording —
+carries the conversation over, and saves the choice, so this is not something
+the owner ever has to be told. The switch is decided in Python
+(`i18n.detect_language`, `main.follow_owner_language`) and is deliberately
+conservative: a menu item in the other script is not a language change.
+
+A launch opens in English unless told otherwise. To open in Japanese:
 
 ```bash
 python main.py --lang ja
 ```
 
-The choice is saved to `data/state.json` (`config.language`), so later
-launches need no flag. `TERUO_LANG=ja` does the same for one environment
+The choice is saved to `data/state.json` (`config.language`) — by the flag
+and by the owner's own writing alike — so later launches need no flag. `TERUO_LANG=ja` does the same for one environment
 without writing to `state.json` (a developer's own preference stays out of
 the repo). `data/state.ja.json`
 is the same demo shop with Japanese item names and counters (枚 / 本 / 個):

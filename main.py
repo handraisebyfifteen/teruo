@@ -8,10 +8,12 @@ A typed line may name local files — a menu photo, a stocktake sheet — which
 attachments.py turns into content blocks the model reads directly. Links are
 refused there, in Python: teruo has no external access (instructions appendix A).
 
-Language: English by default. ``python main.py --lang ja`` switches the whole
-product — prompts, tool output, CLI — to Japanese and remembers the choice in
-state.json (config.language), so later launches need no flag. TERUO_LANG=ja
-does the same for one environment without touching state.json.
+Language: teruo answers in the language the owner writes in. English starts
+the first launch, and follow_owner_language below switches the whole product —
+prompts, tool output, screen — the moment a line arrives in the other one,
+carrying the conversation over and remembering the choice in state.json
+(config.language). ``--lang ja`` and TERUO_LANG=ja still set the language a
+run opens in; neither is something the owner has to know.
 
 Starting over happens in the conversation, not at the terminal: "reset"
 (passphrase, then a yes) sets the current shop's file aside and the loop
@@ -28,7 +30,14 @@ from strands import Agent
 
 from agents import build_operations_agent, with_today
 from attachments import build_prompt
-from i18n import DEFAULT_LANGUAGE, get_language, normalize_language, set_language, t
+from i18n import (
+    DEFAULT_LANGUAGE,
+    detect_language,
+    get_language,
+    normalize_language,
+    set_language,
+    t,
+)
 from store import load_state, save_state
 from tools import (
     delete_product,
@@ -108,6 +117,22 @@ typing everything out — read it and use it to fill in the stages below.
   ($5.00 stays $5.00). Ask if the shop's own unit differs
 - Links you cannot open. Ask for a file or plain text instead
 
+## Language
+This teruo is answering in English right now. Which language it speaks is not
+yours to choose and not the owner's to configure: Python reads the language
+they write in and rebuilds you in it, carrying the conversation over. Only
+English and Japanese exist.
+- Never tell the owner to restart, to pass a flag, or to write in another
+  language. If they write in Japanese, the next turn simply arrives in
+  Japanese — you have no tool for it and no need to mention it
+- Earlier turns may be in the other language. That is a switch that already
+  happened; carry on in the language you are in without remarking on it
+- If someone writes in a language that is neither, say teruo works in English
+  or Japanese only. The whole reply, first sentence included, is in English
+- The owner's own words stay theirs. A shop name, a menu item or a passphrase
+  written in Japanese is registered exactly as they typed it. Never ask them
+  to retype it in English, and don't treat it as something you failed to read
+
 ## Stage 1 — the shape of the shop
 Open with the name: "What should I call your shop?" Save it straight away
 with update_config's new_shop_name (the owner's own name is a fine answer;
@@ -177,6 +202,9 @@ it later.
 won't need it. It keeps staff from changing settings by accident."
 "And an email address to notify when settings change."
 → Save with update_config.
+Whatever they answer is the passphrase, in any language or script. Save it
+verbatim, read it back once so they can see what was stored, and move on —
+don't ask them to confirm that they meant it, and don't ask for another one.
 
 ## Always say at the end
 "For the first week or two, I'll be learning how you count. Treat the
@@ -211,6 +239,19 @@ Be polite and concise.
 - 通貨記号や単位は書かれているとおりに読む。勝手に読み替えない
   （$5.00 は $5.00 のまま）。店の単位と違うなら店主に聞く
 - リンクは開けない。ファイルかテキストで渡してもらう
+
+## 言語
+この teruo はいま日本語で答えている。どの言語で話すかはあなたが選ぶことでも、
+店主が設定することでもない。店主が書いた言語を Python が読み取り、会話を
+引き継いだまま組み直す。対応しているのは日本語と英語だけ。
+- 起動し直せ・フラグを付けろ・別の言語で書けとは絶対に言わない。英語で書かれたら
+  次のターンは自然に英語になる。あなたに切り替えるツールは無いし、断る必要も無い
+- 会話の前の方が別の言語になっていることがある。それは既に起こった切り替えなので、
+  いま自分がいる言語のまま続ける。わざわざ話題にしない
+- どちらでもない言語で話しかけられたら「日本語か英語でしか対応できない」と伝える。
+  返事は最初の一文から最後まで全部日本語
+- 店主の言葉は店主のもの。店名・メニュー名・合言葉が英語で書かれていても、
+  打たれたとおりに登録する。日本語に打ち直させない。読み取れなかった扱いにもしない
 
 ## 段階1 — 店の輪郭
 まず名前から聞く。「お店を何とお呼びすればいいですか」
@@ -269,6 +310,9 @@ new_purchase_unit="本", new_unit_weight=10000）。
 スタッフの方が誤って設定を変えてしまうのを防ぐためです」
 「設定が変わった時にお知らせするメールアドレスも教えてください」
 → update_config で保存する。
+答えられたものがそのまま合言葉になる。言語や文字種は問わない。打たれたとおりに
+保存し、保存した内容を一度だけ読み上げて次へ進む。「本当にこれでいいですか」と
+確かめ直したり、別のものを出させたりしない。
 
 ## 最後に必ず伝える
 「最初の1〜2週間は、こちらが数え方を覚える期間です。数字は参考程度に見てください。
@@ -351,15 +395,41 @@ def needs_counseling() -> bool:
     return not state.get("items") and not state.get("products")
 
 
-def build_agent(counseling: bool) -> Agent:
+def build_agent(counseling: bool, messages: list | None = None) -> Agent:
     """The agent for the mode we're in. Shared by the CLI and the web entry
-    point so both talk to exactly the same teruo."""
+    point so both talk to exactly the same teruo.
+
+    ``messages`` is the conversation so far, passed when the agent is rebuilt
+    in another language (follow_owner_language below)."""
     if counseling:
         return Agent(
             system_prompt=with_today(COUNSELING_PROMPTS[get_language()]),
+            messages=messages or [],
             tools=COUNSELING_TOOLS,
         )
-    return build_operations_agent()
+    return build_operations_agent(messages)
+
+
+def follow_owner_language(
+    text: str, agent: Agent, counseling: bool
+) -> tuple[Agent, str | None]:
+    """Answer in the language the owner is writing in.
+
+    The owner is not the one who launched the process — on the web screen they
+    never see a flag — so the language cannot be theirs to state at startup.
+    It is read from what they type instead: teruo switches, remembers the
+    choice in state.json, and carries the conversation over so nothing is
+    asked twice. Detection is deliberately conservative (i18n.detect_language);
+    an unclear line changes nothing.
+
+    Returns the agent to use and, when it changed, the line to show the owner.
+    """
+    language = detect_language(text)
+    if language is None or language == get_language():
+        return agent, None
+    set_language(language)
+    _remember_language(language)
+    return build_agent(counseling, list(agent.messages)), t("language_followed")
 
 
 def main() -> None:
@@ -389,6 +459,9 @@ def main() -> None:
             break
         if not user_input:
             continue
+        agent, switched = follow_owner_language(user_input, agent, counseling)
+        if switched:
+            print(switched)
         # A line may name a menu photo or a spreadsheet; anything that isn't a
         # readable local file is answered here, in Python, not guessed at by
         # the model (principle 3).

@@ -1,8 +1,10 @@
 """Language switch for everything teruo says on screen.
 
-Default is English. Japanese is selected with ``python main.py --lang ja``
-(or TERUO_LANG=ja); the choice is remembered in state.json under
-config.language so later launches need no flag.
+A launch opens in English unless told otherwise (``python main.py --lang ja``,
+TERUO_LANG=ja, or config.language in state.json). It does not stay there: the
+owner writing in the other language is what decides, through detect_language
+below and follow_owner_language in main.py, and the choice is remembered in
+state.json.
 
 Every user-facing string in the tools and the CLI goes through ``t(key)``.
 Agent prompts live next to the code that builds the agent (main.py /
@@ -15,6 +17,8 @@ missing translation fails at import time rather than at the counter.
 """
 
 from __future__ import annotations
+
+import re
 
 LANGUAGES = ("en", "ja")
 DEFAULT_LANGUAGE = "en"
@@ -31,6 +35,35 @@ def normalize_language(value: object) -> str | None:
     if not isinstance(value, str):
         return None
     return _ALIASES.get(value.strip().lower())
+
+
+# Which language a typed line is written in. Kana and kanji are counted
+# separately because kanji alone is not evidence of Japanese prose — an
+# English-speaking owner registering 焼きそば is still speaking English.
+_KANA = re.compile(r"[\u3040-\u30ff]")
+_KANJI = re.compile(r"[\u3400-\u9fff]")
+_LATIN = re.compile(r"[A-Za-z]")
+_LATIN_WORD = re.compile(r"[A-Za-z]{2,}")
+
+
+def detect_language(text: str) -> str | None:
+    """The language a line is written in, or None when it isn't clear enough.
+
+    Deliberately hard to trip. A line switches teruo's whole language, so a
+    product name in the other script must never be enough: Japanese needs kana
+    and more Japanese characters than Latin letters, English needs no Japanese
+    at all plus a real sentence's worth of words. Anything shorter — "OK",
+    "はい" inside an English line, "Kebab Bento" typed by a Japanese owner —
+    returns None and leaves the language where it is.
+    """
+    kana = len(_KANA.findall(text))
+    japanese = kana + len(_KANJI.findall(text))
+    latin = len(_LATIN.findall(text))
+    if kana >= 2 and japanese > latin:
+        return "ja"
+    if japanese == 0 and latin >= 12 and len(_LATIN_WORD.findall(text)) >= 3:
+        return "en"
+    return None
 
 
 def set_language(language: str) -> str:
@@ -764,10 +797,14 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "キッチンカー・屋台の在庫管理エージェント",
     },
     "web_placeholder": {
-        "en": "Type here — or drop a menu photo or a spreadsheet",
-        "ja": "ここに入力 — メニュー写真や表計算ファイルはドロップでも渡せます",
+        "en": "Type here — or press + to hand over a photo or a spreadsheet",
+        "ja": "ここに入力 — ＋ から写真や表計算ファイルを渡せます",
     },
     "web_send": {"en": "Send", "ja": "送信"},
+    "web_attach": {
+        "en": "Hand over a photo or a file",
+        "ja": "写真やファイルを渡す",
+    },
     "web_fact_badge": {"en": "calculated in Python", "ja": "Pythonが計算"},
     "web_working": {"en": "working", "ja": "処理中"},
     "web_drop_hint": {"en": "Drop to hand over", "ja": "ドロップで渡す"},
@@ -782,6 +819,10 @@ MESSAGES: dict[str, dict[str, str]] = {
     "web_counseling_banner": {
         "en": "Onboarding — registering this shop's setup. About ten minutes; progress is saved if you stop.",
         "ja": "初回カウンセリング中 — お店の構成を登録しています。10分ほど。途中でやめても保存されます。",
+    },
+    "language_followed": {
+        "en": "Switching to English from here. I've remembered it, so the next launch starts in English.",
+        "ja": "ここからは日本語で続けます。設定として覚えたので、次の起動も日本語です。",
     },
     "web_greeting": {
         "en": "Sales, stock counts, purchases — tell me as they happen.",
