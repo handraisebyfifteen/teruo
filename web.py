@@ -26,6 +26,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import secrets
 import shutil
 import sys
 import tempfile
@@ -34,7 +35,7 @@ from pathlib import Path
 from typing import Any
 
 import tools
-from fastapi import FastAPI, Form, UploadFile
+from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from i18n import get_language, t, tool_label
 from main import build_agent, needs_counseling, resolve_language, validate_environment
@@ -48,6 +49,14 @@ _agent: Any = None
 _counseling = False
 _lock = asyncio.Lock()
 _uploads = Path(tempfile.mkdtemp(prefix="teruo-uploads-"))
+
+# Files an export wrote, addressed by a token rather than by their path. The
+# browser never sees a filesystem path and cannot ask for one, so there is no
+# traversal to defend against — only tokens this process handed out itself.
+_downloads: dict[str, Path] = {}
+# A long-running server would otherwise keep every token it ever handed out.
+# Insertion order is the age order, so the oldest links expire first.
+_MAX_DOWNLOADS = 200
 
 
 @asynccontextmanager
@@ -73,12 +82,27 @@ def page() -> FileResponse:
     return FileResponse(PAGE)
 
 
+@app.get("/api/download/{token}")
+def download(token: str) -> FileResponse:
+    """Hand over a file an export wrote. Only files this process announced."""
+    path = _downloads.get(token)
+    if path is None or not path.exists():
+        raise HTTPException(status_code=404, detail="no such file")
+    return FileResponse(
+        path, filename=path.name, media_type="application/octet-stream"
+    )
+
+
 @app.get("/api/config")
 def config() -> dict:
     """What the page needs to render itself in the owner's language."""
     return {
         "language": get_language(),
         "counseling": _counseling,
+        # Read when the page loads, which is this entry point's equivalent of
+        # starting up. Kept out of the loop below because it is composed from
+        # the stored shop name and the clock, not looked up by key.
+        "intro": tools.intro_line(),
         "strings": {
             key: t(key)
             for key in (
@@ -88,6 +112,7 @@ def config() -> dict:
                 "web_fact_badge",
                 "web_working",
                 "web_drop_hint",
+                "web_download_hint",
                 "web_busy",
                 "web_counseling_banner",
                 "web_greeting",
@@ -136,7 +161,22 @@ async def _turn(prompt: Any, notes: list[str]):
         def sink(fact: str) -> None:
             loop.call_soon_threadsafe(queue.put_nowait, {"type": "fact", "text": fact})
 
+        def files_sink(paths: list[Path]) -> None:
+            """An export just wrote files. At the CLI its printed path is the
+            hand-over; here the hand-over has to be a link."""
+            offered = []
+            for path in paths:
+                key = secrets.token_urlsafe(8)
+                _downloads[key] = path
+                offered.append({"name": path.name, "url": f"/api/download/{key}"})
+            while len(_downloads) > _MAX_DOWNLOADS:
+                del _downloads[next(iter(_downloads))]
+            loop.call_soon_threadsafe(
+                queue.put_nowait, {"type": "files", "files": offered}
+            )
+
         token = tools.set_output_sink(sink)
+        file_token = tools.set_file_sink(files_sink)
 
         async def relay(agent: Any, text: Any) -> None:
             async for event in agent.stream_async(text):
@@ -182,6 +222,7 @@ async def _turn(prompt: Any, notes: list[str]):
                     break
         finally:
             tools.reset_output_sink(token)
+            tools.reset_file_sink(file_token)
             if not task.done():
                 task.cancel()
 

@@ -109,6 +109,27 @@ python main.py
   `data/state.json` aside under a dated name, and runs onboarding right there
 - Type `exit` or `quit` to leave
 
+## What you see at startup
+
+Both the CLI and the browser open with one line: the date, the time, and whose
+shop this is. Onboarding asks for the name, so until then the line is generic.
+
+```
+teruo — an inventory agent for food trucks and street stalls. 2026-09-05 (Sat) 09:32   <- first run
+teruo — the inventory agent for Kebab House. 2026-09-05 (Sat) 09:32                    <- once it has a name
+```
+
+The name lives in `config.shop_name`. A shop's name, the owner's own name, or
+nothing at all — declining just keeps the generic line. Saying "we're Kebab
+House" later is enough; `update_config` picks it up.
+
+The clock is Python's, in `Asia/Tokyo` — the same clock the records are
+stamped from. No model call, so there is no wait and nothing to pay for. A
+machine running on a wrong clock or in another timezone shows itself here,
+before the first sale is recorded rather than at the month's reconciliation.
+A missing or corrupt state.json falls back to the generic line rather than
+stopping startup.
+
 ## The one-screen version
 
 ```bash
@@ -147,8 +168,8 @@ Type a file name on the prompt line, with or without words around it:
 
 Photos (`png` `jpg` `gif` `webp`) and documents (`xlsx` `xls` `csv` `pdf`
 `docx` `doc` `html` `txt` `md`) are read by the model directly — nothing is
-parsed locally, so no spreadsheet library is involved. Paths may contain
-spaces, quoted or not.
+parsed on the way in, so no spreadsheet library reads them. Paths may
+contain spaces, quoted or not.
 
 teruo always shows what it read and waits for a yes before recording
 anything; a misread price is caught there, not in the stock figures a week
@@ -157,6 +178,27 @@ later. Up to 5 files per line (about 3.7 MB per photo, 4.5 MB per document).
 **Links are not read.** teruo has no external access by design — no
 scraping, no map or review-site APIs (instructions appendix A). Save the page
 as a photo or a file and hand it over that way.
+
+## Getting a file back out
+
+Ask for a spreadsheet — "give me August for the accountant" — and
+`export_excel` writes one `.xlsx`. Five sheets: sales, purchases, stock
+counts, stock right now, recipes. Quantities are real numbers with the unit
+in its own column, so a SUM or a pivot works straight away, and dates are
+dates (standard 1900-epoch serials, so nothing lands four years off).
+
+**This is also the right answer for Google Sheets.** Dropped into Drive, the
+five sheets become five tabs of one document; five CSVs would become five
+separate documents. `export_csv` earns its keep somewhere else — feeding
+another system, such as accounting software or a script (`utf-8-sig`, so
+Excel opens them without mojibake).
+
+Both write into `data/exports/<month or all>/`. The CLI prints that path; the
+one-screen version (`web.py`) turns each written file into a download link on
+screen, because a browser cannot reach a path.
+
+Purchase costs are not recorded anywhere in teruo. The purchases sheet has no
+money column, and the export is not a full set of books.
 
 ## Language
 

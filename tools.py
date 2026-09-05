@@ -8,18 +8,27 @@ values to settings_log. Every string the owner sees comes from i18n.py
 
 from __future__ import annotations
 
+import csv
 import functools
 import re
 from contextvars import ContextVar
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from strands import tool
 
 from i18n import t
-from store import STATE_LOCK, StateConflictError, archive_and_reset, load_state, save_state
+from store import (
+    STATE_LOCK,
+    STATE_PATH,
+    StateConflictError,
+    archive_and_reset,
+    load_state,
+    save_state,
+)
 
 
 def _serialized(func):
@@ -39,6 +48,12 @@ def _serialized(func):
 
 
 TIMEZONE = ZoneInfo("Asia/Tokyo")
+# Monday-first, to match datetime.weekday(). Named rather than taken from the
+# C locale, which is not installed in every container teruo runs in.
+WEEKDAYS = (
+    "weekday_mon", "weekday_tue", "weekday_wed", "weekday_thu",
+    "weekday_fri", "weekday_sat", "weekday_sun",
+)
 VENUE_TYPES = ("event", "solo")
 UNIT_TYPES = ("weight", "volume", "count")
 # The three consumption types (design doc §2). This is the counting axis,
@@ -83,6 +98,47 @@ UNIT_LEARNING_SAMPLES = 3
 
 def _now() -> datetime:
     return datetime.now(TIMEZONE)
+
+
+def today() -> str:
+    """The current date in the shop's timezone as YYYY-MM-DD. The model has
+    no clock; the prompts get the date from here."""
+    return _now().strftime("%Y-%m-%d")
+
+
+def now_stamp() -> str:
+    """The current date and time in the shop's timezone, spelled for the owner.
+
+    Both entry points lead with this. It is the one line that shows the clock
+    the records are stamped from is the clock the owner is standing in — a
+    machine an hour off, or a day behind, is worth catching before the first
+    sale is recorded rather than at the month's reconciliation.
+    """
+    moment = _now()
+    return t(
+        "clock",
+        date=moment.strftime("%Y-%m-%d"),
+        weekday=t(WEEKDAYS[moment.weekday()]),
+        time=moment.strftime("%H:%M"),
+    )
+
+
+def intro_line() -> str:
+    """The first line both entry points print: whose shop this is, and the clock.
+
+    The shop's name once onboarding has captured it; the generic description
+    before that, because on a first run teruo genuinely does not know whose
+    shop it is and should not pretend otherwise. Read defensively — this runs
+    before anything else, and a missing or half-written state file should not
+    stop the owner from reaching the prompt.
+    """
+    try:
+        shop = (load_state().get("config") or {}).get("shop_name")
+    except (OSError, ValueError):
+        shop = None
+    if shop:
+        return t("intro_named", shop=shop, clock=now_stamp())
+    return t("intro", clock=now_stamp())
 
 
 def _now_iso() -> str:
@@ -166,6 +222,30 @@ def set_output_sink(sink) -> Any:
 
 def reset_output_sink(token: Any) -> None:
     _OUTPUT_SINK.reset(token)
+
+
+# The same idea for files. An export writes real files somewhere on disk; at
+# the CLI the path it prints is enough, but a browser cannot reach a path. The
+# web entry point installs a sink here and turns what it receives into a
+# download link, so "hand it to me" works from either entry point.
+_FILE_SINK: ContextVar[Any] = ContextVar("teruo_file_sink", default=None)
+
+
+def set_file_sink(sink) -> Any:
+    """Route written files to ``sink``. Returns a reset token."""
+    return _FILE_SINK.set(sink)
+
+
+def reset_file_sink(token: Any) -> None:
+    _FILE_SINK.reset(token)
+
+
+def _offer(paths: list[Path]) -> None:
+    """Announce files just written. No sink (the CLI) means nothing happens —
+    the tool's own text already says where they are."""
+    sink = _FILE_SINK.get()
+    if sink is not None:
+        sink(list(paths))
 
 
 def told_marker() -> str:
@@ -1179,6 +1259,387 @@ def get_monthly_reconciliation(month: str = "") -> str:
 # ---------------------------------------------------------------------------
 
 
+def _recorded_months(state: dict[str, Any]) -> list[str]:
+    """Every YYYY-MM that holds a sale, a purchase, or a stock count."""
+    months = {
+        entry["recorded_at"][:7]
+        for entry in state["history"]
+        if entry.get("recorded_at")
+    }
+    for item in state["items"]:
+        months.update(
+            entry["recorded_at"][:7]
+            for entry in item.get("count_history", [])
+            if entry.get("recorded_at")
+        )
+    return sorted(months)
+
+
+def _date_parts(recorded_at: str) -> tuple[str, str]:
+    """Split an ISO timestamp into a date and a time column. Spreadsheets
+    sort and filter those; one long ISO string they do not."""
+    return recorded_at[:10], recorded_at[11:19]
+
+
+def _write_csv(path: Path, header: list[str], rows: list[list[Any]]) -> None:
+    """Write one sheet. utf-8-sig, because Excel reads a BOM-less UTF-8 CSV
+    as the local codepage and turns every non-ASCII name into mojibake."""
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(header)
+        writer.writerows(rows)
+
+
+def _export_sales(state: dict[str, Any], month: str) -> tuple[list[str], list[list[Any]]]:
+    header = [
+        t("csv_date"), t("csv_time"), t("csv_venue"), t("csv_product_id"),
+        t("csv_product"), t("csv_quantity"), t("csv_unit_price"), t("csv_revenue"),
+    ]
+    rows: list[list[Any]] = []
+    for entry in state["history"]:
+        recorded_at = entry.get("recorded_at")
+        if entry.get("product_id") is None or not recorded_at:
+            continue
+        if month and recorded_at[:7] != month:
+            continue
+        product = _find(state["products"], entry["product_id"])
+        price = float(product["price"]) if product else 0.0
+        quantity = float(entry.get("quantity") or 0)
+        date, clock = _date_parts(recorded_at)
+        rows.append([
+            date, clock, entry.get("venue_type", "solo"), entry["product_id"],
+            product["name"] if product else entry["product_id"],
+            _display_number(quantity), _display_number(price),
+            _display_number(price * quantity),
+        ])
+    return header, rows
+
+
+def _export_purchases(state: dict[str, Any], month: str) -> tuple[list[str], list[list[Any]]]:
+    header = [
+        t("csv_date"), t("csv_time"), t("csv_item_id"), t("csv_item"),
+        t("csv_amount"), t("csv_unit"), t("csv_units"), t("csv_purchase_unit"),
+        t("csv_estimated"),
+    ]
+    rows: list[list[Any]] = []
+    for entry in state["history"]:
+        recorded_at = entry.get("recorded_at")
+        if entry.get("type") != "purchase" or not recorded_at:
+            continue
+        if month and recorded_at[:7] != month:
+            continue
+        item = _find(state["items"], entry.get("item_id"))
+        date, clock = _date_parts(recorded_at)
+        rows.append([
+            date, clock, entry.get("item_id"),
+            item["name"] if item else entry.get("item_id"),
+            _display_number(float(entry.get("amount") or 0)),
+            item["unit"] if item else "",
+            _display_number(float(entry["units"])) if entry.get("units") else "",
+            (item.get("purchase_unit") or "") if item else "",
+            t("csv_yes") if entry.get("estimated") else t("csv_no"),
+        ])
+    return header, rows
+
+
+def _export_counts(state: dict[str, Any], month: str) -> tuple[list[str], list[list[Any]]]:
+    header = [
+        t("csv_date"), t("csv_time"), t("csv_item_id"), t("csv_item"),
+        t("csv_actual_stock"), t("csv_book_stock"), t("csv_gap"), t("csv_unit"),
+        t("csv_coef_before"), t("csv_coef_after"),
+    ]
+    rows: list[list[Any]] = []
+    for item in state["items"]:
+        for entry in item.get("count_history", []):
+            recorded_at = entry.get("recorded_at")
+            # Only real physical counts. count_history also holds empty-unit
+            # and unit-change events, which have no measured stock.
+            if "actual_stock" not in entry or not recorded_at:
+                continue
+            if month and recorded_at[:7] != month:
+                continue
+            actual = float(entry["actual_stock"])
+            book = float(entry.get("calculated_stock") or 0.0)
+            date, clock = _date_parts(recorded_at)
+            rows.append([
+                date, clock, item["id"], item["name"],
+                _display_number(actual), _display_number(book),
+                _display_number(_round_one(actual - book)), item["unit"],
+                entry.get("coefficient_before", ""), entry.get("coefficient_after", ""),
+            ])
+    rows.sort(key=lambda row: (row[0], row[1]))
+    return header, rows
+
+
+def _export_stock(state: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
+    header = [
+        t("csv_item_id"), t("csv_item"), t("csv_stock"), t("csv_unit"),
+        t("csv_consumption_type"), t("csv_coefficient"), t("csv_last_counted"),
+    ]
+    rows: list[list[Any]] = []
+    for item in state["items"]:
+        if not item.get("active", True):
+            continue
+        coefficient = item.get("coefficient")
+        rows.append([
+            item["id"], item["name"], _display_number(float(item["stock"])),
+            item["unit"], _consumption_type(item),
+            _display_number(float(coefficient)) if coefficient else "",
+            (item.get("last_counted") or "")[:10],
+        ])
+    return header, rows
+
+
+def _export_recipes(state: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
+    header = [
+        t("csv_product_id"), t("csv_product"), t("csv_price"), t("csv_item_id"),
+        t("csv_item"), t("csv_qty_per_serving"), t("csv_unit"),
+    ]
+    rows: list[list[Any]] = []
+    for product in state["products"]:
+        for ingredient in product["recipe"]:
+            item = _find(state["items"], ingredient["item_id"])
+            rows.append([
+                product["id"], product["name"], _display_number(float(product["price"])),
+                ingredient["item_id"], item["name"] if item else ingredient["item_id"],
+                _display_number(float(ingredient["qty"])), item["unit"] if item else "",
+            ])
+    return header, rows
+
+
+# Columns that hold a quantity rather than a label. CSV writes everything as
+# text and lets the spreadsheet guess; a workbook can do better, so these
+# become real numbers and a SUM or a pivot over them works straight away.
+_NUMERIC_COLUMNS = (
+    "csv_quantity", "csv_unit_price", "csv_revenue", "csv_amount", "csv_units",
+    "csv_actual_stock", "csv_book_stock", "csv_gap", "csv_coef_before",
+    "csv_coef_after", "csv_stock", "csv_coefficient", "csv_price",
+    "csv_qty_per_serving",
+)
+
+
+def _as_number(value: Any) -> Any:
+    """A numeric column's cell as a number, or unchanged if it is blank or
+    not a number after all (a coefficient column can hold either)."""
+    if isinstance(value, (int, float)):
+        return value
+    text = str(value).strip()
+    if not text:
+        return ""
+    try:
+        number = float(text)
+    except ValueError:
+        return value
+    return int(number) if number.is_integer() else number
+
+
+def _export_sheets(
+    state: dict[str, Any], month: str
+) -> list[tuple[str, str, list[str], list[list[Any]]]]:
+    """The five sheets both exporters write, as (filename, label, header, rows).
+
+    Sales, purchases and counts honour ``month``; stock and recipes are the
+    current state whatever the month, because a photograph of last August's
+    shelf does not exist.
+    """
+    return [
+        ("sales.csv", t("export_label_sales"), *_export_sales(state, month)),
+        ("purchases.csv", t("export_label_purchases"), *_export_purchases(state, month)),
+        ("stock_counts.csv", t("export_label_counts"), *_export_counts(state, month)),
+        ("stock_now.csv", t("export_label_stock"), *_export_stock(state)),
+        ("recipes.csv", t("export_label_recipes"), *_export_recipes(state)),
+    ]
+
+
+def _nothing_to_export(
+    state: dict[str, Any],
+    month: str,
+    sheets: list[tuple[str, str, list[str], list[list[Any]]]],
+) -> str:
+    """A sentence to return when there is no point writing anything, else "".
+
+    stock_now and recipes always have rows, so "is there anything here" has to
+    be asked of the three record sheets. Otherwise a typo'd month writes a
+    bundle that looks complete and contains no records.
+    """
+    if sum(len(rows) for _, _, _, rows in sheets[:3]):
+        return ""
+    if not month:
+        return t("export_none")
+    # Name the months that exist. The model has no idea what year it is, so
+    # "August" becomes a guess; without this it guesses again.
+    return (
+        f'{t("export_no_records_for_month", month=month)}\n'
+        f'{t("export_months_available", months=_join(_recorded_months(state)))}'
+    )
+
+
+def _write_xlsx(
+    path: Path, sheets: list[tuple[str, str, list[str], list[list[Any]]]]
+) -> None:
+    """Write every sheet into one workbook: bold frozen header, dates as dates,
+    quantities as numbers, columns wide enough to read without dragging."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+    from openpyxl.utils import get_column_letter
+
+    numeric_labels = {t(key) for key in _NUMERIC_COLUMNS}
+    date_labels = {t("csv_date"), t("csv_last_counted")}
+
+    book = Workbook()
+    book.remove(book.active)
+    for _, label, header, rows in sheets:
+        sheet = book.create_sheet(label[:31])
+        sheet.append(header)
+        numeric = [index for index, name in enumerate(header) if name in numeric_labels]
+        dates = [index for index, name in enumerate(header) if name in date_labels]
+
+        for row in rows:
+            cells = list(row)
+            for index in numeric:
+                cells[index] = _as_number(cells[index])
+            for index in dates:
+                try:
+                    cells[index] = date.fromisoformat(str(cells[index]))
+                except ValueError:
+                    pass  # an unparseable date stays the text it was
+            sheet.append(cells)
+            for index in dates:
+                # openpyxl would otherwise show a date as its serial number.
+                cell = sheet.cell(row=sheet.max_row, column=index + 1)
+                cell.number_format = "yyyy-mm-dd"
+
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+        sheet.freeze_panes = "A2"
+        if rows:
+            sheet.auto_filter.ref = sheet.dimensions
+        for index, name in enumerate(header, start=1):
+            widest = max(
+                [_cell_width(name)] + [_cell_width(row[index - 1]) for row in rows]
+            )
+            sheet.column_dimensions[get_column_letter(index)].width = min(widest + 2, 40)
+
+    book.save(path)
+
+
+def _cell_width(value: Any) -> int:
+    """Rough display width. A Japanese character occupies about two columns of
+    a spreadsheet's default font, so counting characters underestimates it."""
+    text = str(value)
+    return sum(1 if character.isascii() else 2 for character in text)
+
+
+@tool
+@_serialized
+def export_excel(month: str = "") -> str:
+    """Write the shop's records to one Excel workbook (.xlsx) — the file to
+    hand to an accountant, or to keep as a copy outside teruo.
+
+    One file, five sheets: sales, purchases, stock counts, stock right now,
+    recipes. Excel opens it, and so does Google Sheets — the five sheets
+    become five tabs of one document. Quantities are written as numbers with
+    the unit in its own column, so the spreadsheet totals them. Purchase costs are not recorded
+    anywhere in teruo, so the purchases sheet carries quantities only, never
+    money. Use this unless the owner specifically asks for CSV.
+
+    Args:
+        month: Limit sales, purchases, and stock counts to one month
+            (YYYY-MM). Empty writes every record. The stock and recipe sheets
+            are always the current state, whatever the month.
+    """
+    if month and not re.match(r"^\d{4}-\d{2}$", month):
+        return t("month_format")
+
+    state = load_state()
+    sheets = _export_sheets(state, month)
+    empty = _nothing_to_export(state, month, sheets)
+    if empty:
+        return empty
+
+    period = month or "all"
+    folder = STATE_PATH.parent / "exports" / period
+    path = folder / f"teruo-{period}.xlsx"
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        _write_xlsx(path, sheets)
+    except ImportError:
+        return t("excel_unavailable")
+    except OSError as error:
+        return t("export_failed", reason=error)
+
+    _offer([path])
+    lines = [
+        t(
+            "excel_done",
+            count=len(sheets),
+            path=path,
+            period=month or t("export_period_all"),
+        )
+    ]
+    lines.extend(
+        t("excel_line", label=label, rows=len(rows))
+        for _, label, _, rows in sheets
+    )
+    lines.append(t("excel_open_hint"))
+    return _tell("\n".join(lines))
+
+
+@tool
+@_serialized
+def export_csv(month: str = "") -> str:
+    """Write the shop's records as five CSV files, for feeding another system:
+    accounting software, a script, anything that wants plain text.
+
+    Prefer export_excel for a spreadsheet. It writes the same records as one
+    .xlsx, and Google Sheets opens that as five tabs of one document — five
+    CSVs would become five separate documents there. Use this tool when the
+    owner asks for CSV by name, or names a system that takes CSV.
+
+    Five files: sales, purchases, stock counts, stock right now, recipes.
+    Numbers are written bare with the unit in its own column, so the
+    spreadsheet can total them. Purchase costs are not recorded anywhere in
+    teruo, so the purchase file carries quantities only, never money.
+
+    Args:
+        month: Limit sales, purchases, and stock counts to one month
+            (YYYY-MM). Empty writes every record. The stock and recipe files
+            are always the current state, whatever the month.
+    """
+    if month and not re.match(r"^\d{4}-\d{2}$", month):
+        return t("month_format")
+
+    state = load_state()
+    sheets = _export_sheets(state, month)
+    empty = _nothing_to_export(state, month, sheets)
+    if empty:
+        return empty
+
+    folder = STATE_PATH.parent / "exports" / (month or "all")
+    try:
+        folder.mkdir(parents=True, exist_ok=True)
+        for filename, _, header, rows in sheets:
+            _write_csv(folder / filename, header, rows)
+    except OSError as error:
+        return t("export_failed", reason=error)
+
+    _offer([folder / filename for filename, _, _, _ in sheets])
+    lines = [
+        t(
+            "export_done",
+            count=len(sheets),
+            folder=folder,
+            period=month or t("export_period_all"),
+        )
+    ]
+    lines.extend(
+        t("export_line", file=filename, label=label, rows=len(rows))
+        for filename, label, _, rows in sheets
+    )
+    lines.append(t("export_open_hint"))
+    return _tell("\n".join(lines))
+
+
 @tool
 @_serialized
 def register_item(
@@ -1738,26 +2199,38 @@ def reset_shop(
 @_serialized
 def update_config(
     passphrase: str = "",
+    new_shop_name: str = "",
     new_passphrase: str = "",
     new_notify_email: str = "",
 ) -> str:
-    """Set the passphrase and the email address notified of settings changes.
+    """Set the shop's name, the passphrase, and the email address notified of
+    settings changes.
 
-    On first setup (nothing stored yet) it can be set directly. Changing it
-    later requires the current passphrase.
+    On first setup (nothing stored yet) these can be set directly. Changing
+    them later requires the current passphrase.
 
     Args:
         passphrase: The current passphrase (only needed when changing).
+        new_shop_name: What to call this shop — the shop's name, or the
+            owner's. teruo greets them by it at every startup.
         new_passphrase: The new passphrase.
         new_notify_email: Email address to notify about settings changes.
     """
-    if not new_passphrase and not new_notify_email:
+    if not new_shop_name and not new_passphrase and not new_notify_email:
         return t("config_nothing")
     state = load_state()
     if error := _check_passphrase(state, passphrase):
         return error
     config = state.setdefault("config", {"passphrase": None, "notify_email": None})
     messages: list[str] = []
+    if new_shop_name:
+        shop = new_shop_name.strip()
+        old_shop = config.get("shop_name")
+        config["shop_name"] = shop
+        _log_setting(
+            state, "update_config", t("log_shop_name_set", shop=shop), old_shop, shop
+        )
+        messages.append(t("shop_name_set", shop=shop))
     if new_passphrase:
         config["passphrase"] = new_passphrase
         _log_setting(state, "update_config", t("log_passphrase_set"), None, t("hidden"))

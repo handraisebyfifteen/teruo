@@ -68,3 +68,6 @@ data/state.demo-month.json
 data/state.demo-month.*.json
 data/state.original.json
 data/state.after*.json
+
+# Owner data written by export_excel / export_csv (real sales and purchase records)
+data/exports/

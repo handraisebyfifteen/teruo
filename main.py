@@ -26,17 +26,20 @@ import sys
 
 from strands import Agent
 
-from agents import build_operations_agent
+from agents import build_operations_agent, with_today
 from attachments import build_prompt
 from i18n import DEFAULT_LANGUAGE, get_language, normalize_language, set_language, t
 from store import load_state, save_state
 from tools import (
     delete_product,
+    export_csv,
+    export_excel,
     get_capacity,
     get_monthly_reconciliation,
     get_recipes,
     get_sales_summary,
     get_stock_status,
+    intro_line,
     record_count,
     record_purchase,
     record_sales,
@@ -65,6 +68,8 @@ COUNSELING_TOOLS = [
     get_capacity,
     get_recipes,
     get_monthly_reconciliation,
+    export_csv,
+    export_excel,
     register_item,
     register_product,
     update_recipe,
@@ -104,7 +109,11 @@ typing everything out — read it and use it to fill in the stages below.
 - Links you cannot open. Ask for a file or plain text instead
 
 ## Stage 1 — the shape of the shop
-"What do you sell? Walk me through the menu."
+Open with the name: "What should I call your shop?" Save it straight away
+with update_config's new_shop_name (the owner's own name is a fine answer;
+so is skipping it). It is the first thing teruo says at every startup from
+then on, so ask it before anything else and don't ask twice.
+Then: "What do you sell? Walk me through the menu."
 Then: "When you weigh or measure things, what do you use — grams, or
 ounces and pounds?"
 The answer fixes the shop's measurement system for everything that follows:
@@ -204,8 +213,12 @@ Be polite and concise.
 - リンクは開けない。ファイルかテキストで渡してもらう
 
 ## 段階1 — 店の輪郭
-「どんなものを売っていますか。メニューをひと通り教えてください」
-続けて「量る時の単位はグラムですか。それともオンス・ポンドですか」と聞く。
+まず名前から聞く。「お店を何とお呼びすればいいですか」
+答えをすぐ update_config の new_shop_name で保存する（店名でも店主の名前でもよい。
+答えたくなければ飛ばしてよい）。以後の起動時に teruo が最初に言う名前になるので、
+何よりも先に聞き、二度は聞かない。
+続けて「どんなものを売っていますか。メニューをひと通り教えてください」
+さらに「量る時の単位はグラムですか。それともオンス・ポンドですか」と聞く。
 答えでこの店の計量系が決まる: メートル法（g / kg / ml）かヤード・ポンド法（oz / lb / fl oz）。
 以後の重量・容量の品目、レシピの量、仮置きの値はすべてその計量系で登録し、2つを混ぜない。
 仮置きの標準値もその計量系に換算する（30g ≈ 1oz）。
@@ -343,7 +356,8 @@ def build_agent(counseling: bool) -> Agent:
     point so both talk to exactly the same teruo."""
     if counseling:
         return Agent(
-            system_prompt=COUNSELING_PROMPTS[get_language()], tools=COUNSELING_TOOLS
+            system_prompt=with_today(COUNSELING_PROMPTS[get_language()]),
+            tools=COUNSELING_TOOLS,
         )
     return build_operations_agent()
 
@@ -353,6 +367,10 @@ def main() -> None:
     validate_environment()
     counseling = "--setup" in sys.argv[1:] or needs_counseling()
     agent = build_agent(counseling)
+    # Whose shop this is, the date and the time — before anything else, in
+    # either mode. Both come from Python, so they are right even when the
+    # model has not been asked a thing yet.
+    print(intro_line())
     if counseling:
         print(t("cli_counseling_start"))
         try:
