@@ -122,6 +122,17 @@
     font-size: 15px; line-height: 1; padding: 0;
   }
   .row { display: flex; gap: 10px; align-items: flex-end; }
+  /* The way in for a photo of a paper sales slip. Dropping works too, but a
+     button is the part an owner finds without being told. */
+  #picker { display: none; }
+  button.attach {
+    flex: none; width: 44px; height: 44px; padding: 0;
+    font: 300 24px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    border: 1px solid var(--line); border-radius: 3px;
+    background: var(--ground); color: var(--muted); cursor: pointer;
+  }
+  button.attach:hover { border-color: var(--accent); color: var(--accent); }
+  button.attach:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
   textarea {
     flex: 1; resize: none; font: inherit; color: inherit;
     border: 1px solid var(--line); border-radius: 3px; padding: 10px 12px;
@@ -154,6 +165,8 @@
     <div class="composer">
       <div id="files"></div>
       <div class="row">
+        <button type="button" class="attach" id="attach">+</button>
+        <input type="file" id="picker" multiple accept="image/png,image/jpeg,image/gif,image/webp,.pdf,.csv,.doc,.docx,.xls,.xlsx,.html,.htm,.txt,.md">
         <textarea id="text" rows="1"></textarea>
         <button type="submit" class="send" id="send"></button>
       </div>
@@ -168,6 +181,8 @@ const textarea = document.getElementById("text");
 const sendButton = document.getElementById("send");
 const fileStrip = document.getElementById("files");
 const dropOverlay = document.getElementById("drop");
+const attachButton = document.getElementById("attach");
+const picker = document.getElementById("picker");
 
 let strings = {};
 let pending = [];      // files staged for the next message
@@ -221,6 +236,13 @@ function stage(files) {
   for (const file of files) pending.push(file);
   renderFiles();
 }
+
+attachButton.addEventListener("click", () => picker.click());
+picker.addEventListener("change", () => {
+  if (picker.files.length) stage(picker.files);
+  picker.value = "";   // so the same file can be picked twice in a row
+  textarea.focus();
+});
 
 // --- drag and drop -------------------------------------------------------
 let dragDepth = 0;
@@ -344,6 +366,11 @@ function apply(event, node, chips, working, said) {
     node.append(el("div", "note", event.text));
   } else if (event.type === "error") {
     node.append(el("div", "note bad", event.text));
+  } else if (event.type === "language") {
+    // teruo is answering in the owner's language from here. The screen follows
+    // in the same breath, so nothing on it stays in the language they left.
+    dress(event.language, event.strings);
+    node.append(el("div", "note", event.text));
   } else if (event.type === "mode") {
     // The shop was reset mid-conversation and onboarding took over.
     const banner = document.getElementById("banner");
@@ -353,15 +380,23 @@ function apply(event, node, chips, working, said) {
   toBottom();
 }
 
-// --- boot ----------------------------------------------------------------
-(async () => {
-  const config = await (await fetch("/api/config")).json();
-  strings = config.strings;
-  document.documentElement.lang = config.language;
+function dress(language, next) {
+  strings = next;
+  document.documentElement.lang = language;
   document.getElementById("tagline").textContent = strings.web_tagline;
   textarea.placeholder = strings.web_placeholder;
   sendButton.textContent = strings.web_send;
+  attachButton.title = strings.web_attach;
+  attachButton.setAttribute("aria-label", strings.web_attach);
   dropOverlay.textContent = strings.web_drop_hint;
+  const banner = document.getElementById("banner");
+  if (banner.classList.contains("on")) banner.textContent = strings.web_counseling_banner;
+}
+
+// --- boot ----------------------------------------------------------------
+(async () => {
+  const config = await (await fetch("/api/config")).json();
+  dress(config.language, config.strings);
 
   // Date, time, and what this is — first, in either mode, as the CLI does.
   intro(config.intro);

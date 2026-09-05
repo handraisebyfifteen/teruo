@@ -316,7 +316,7 @@ def _check_passphrase(state: dict[str, Any], passphrase: str) -> str | None:
     stored = (state.get("config") or {}).get("passphrase")
     if not stored:
         return None
-    if passphrase == stored:
+    if passphrase.strip() == stored.strip():
         return None
     return t("passphrase_wrong")
 
@@ -2232,7 +2232,9 @@ def update_config(
         )
         messages.append(t("shop_name_set", shop=shop))
     if new_passphrase:
-        config["passphrase"] = new_passphrase
+        # Stripped like the shop name: the check below is an exact match, and a
+        # space the owner never sees would lock them out of their own settings.
+        config["passphrase"] = new_passphrase.strip()
         _log_setting(state, "update_config", t("log_passphrase_set"), None, t("hidden"))
         messages.append(t("passphrase_set"))
     if new_notify_email:

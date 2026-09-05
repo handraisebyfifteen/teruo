@@ -259,5 +259,8 @@
       "active": true
     }
   ],
-  "history": []
+  "history": [],
+  "config": {
+    "language": "ja"
+  }
 }

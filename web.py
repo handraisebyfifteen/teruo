@@ -38,7 +38,13 @@ import tools
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from i18n import get_language, t, tool_label
-from main import build_agent, needs_counseling, resolve_language, validate_environment
+from main import (
+    build_agent,
+    follow_owner_language,
+    needs_counseling,
+    resolve_language,
+    validate_environment,
+)
 
 PAGE = Path(__file__).parent / "web" / "index.html"
 
@@ -93,6 +99,27 @@ def download(token: str) -> FileResponse:
     )
 
 
+def _strings() -> dict[str, str]:
+    """Everything the page prints in its own right, in the current language."""
+    return {
+        key: t(key)
+        for key in (
+            "web_tagline",
+            "web_placeholder",
+            "web_send",
+            "web_attach",
+            "web_fact_badge",
+            "web_working",
+            "web_drop_hint",
+            "web_download_hint",
+            "web_busy",
+            "web_counseling_banner",
+            "web_greeting",
+            "web_disconnected",
+        )
+    }
+
+
 @app.get("/api/config")
 def config() -> dict:
     """What the page needs to render itself in the owner's language."""
@@ -103,22 +130,7 @@ def config() -> dict:
         # starting up. Kept out of the loop below because it is composed from
         # the stored shop name and the clock, not looked up by key.
         "intro": tools.intro_line(),
-        "strings": {
-            key: t(key)
-            for key in (
-                "web_tagline",
-                "web_placeholder",
-                "web_send",
-                "web_fact_badge",
-                "web_working",
-                "web_drop_hint",
-                "web_download_hint",
-                "web_busy",
-                "web_counseling_banner",
-                "web_greeting",
-                "web_disconnected",
-            )
-        },
+        "strings": _strings(),
     }
 
 
@@ -136,7 +148,7 @@ async def _save_uploads(files: list[UploadFile]) -> list[tuple[str, Path]]:
     return saved
 
 
-async def _turn(prompt: Any, notes: list[str]):
+async def _turn(prompt: Any, notes: list[str], switched: str | None = None):
     """One turn of the conversation, as a stream of screen events.
 
     Facts arrive on a queue because they are produced on the worker thread
@@ -144,6 +156,17 @@ async def _turn(prompt: Any, notes: list[str]):
     coroutine. Merging both into one queue keeps them in the order they
     actually happened, which is what makes the screen readable.
     """
+    if switched:
+        # teruo just changed language. The screen's own wording is not part of
+        # the conversation, so it is handed over here rather than reloaded.
+        yield _sse(
+            {
+                "type": "language",
+                "language": get_language(),
+                "strings": _strings(),
+                "text": switched,
+            }
+        )
     for note in notes:
         yield _sse({"type": "note", "text": note})
     if prompt is None:
@@ -250,9 +273,16 @@ async def message(
     # Import here so attachments' i18n lookups run after the language is set.
     from attachments import build_prompt_from_uploads
 
+    global _agent
+    switched = None
+    # Before anything is read or worded: the owner may be writing in the other
+    # language. Skipped while a turn is running — the agent about to be
+    # replaced is the one mid-answer, and that turn is refused below anyway.
+    if text.strip() and not _lock.locked():
+        _agent, switched = follow_owner_language(text.strip(), _agent, _counseling)
     uploads = await _save_uploads(files or [])
     prompt, notes = build_prompt_from_uploads(text.strip(), uploads)
-    return _stream(_turn(prompt, notes))
+    return _stream(_turn(prompt, notes, switched))
 
 
 def main() -> None:

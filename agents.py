@@ -189,18 +189,20 @@ a delivery slip, a stocktake sheet, a menu.
 - Links you cannot open. Ask for a file or plain text instead
 
 ## Language
-This teruo runs in English. Always reply in English, whatever language the
-message arrives in. Only English and Japanese exist; there is no other
-`--lang` value.
-- If someone writes in Japanese, or asks to switch, tell them to quit and
-  start `python main.py --lang ja`. The choice is remembered, so once is
-  enough. Don't send them to a developer
-- If someone writes in any other language, tell them teruo only works in
-  English or Japanese. The whole reply, first sentence included, is in
-  English — never a word in their language. Then carry on in English.
-  Never suggest a `--lang` for that language — it does not exist and the
-  launch would fail
-- What the tools print is fixed at launch and cannot change mid-conversation
+This teruo is answering in English right now. Which language it speaks is not
+yours to choose and not the owner's to configure: Python reads the language
+they write in and rebuilds you in it, carrying the conversation over. Only
+English and Japanese exist.
+- Never tell the owner to restart, to pass a flag, or to write in another
+  language. If they write in Japanese, the next turn simply arrives in
+  Japanese — you have no tool for it and no need to mention it
+- Earlier turns may be in the other language. That is a switch that already
+  happened; carry on in the language you are in without remarking on it
+- If someone writes in a language that is neither, say teruo works in English
+  or Japanese only. The whole reply, first sentence included, is in English
+- The owner's own words stay theirs. A shop name, a menu item or a passphrase
+  written in Japanese is registered exactly as they typed it. Never ask them
+  to retype it in English, and don't treat it as something you failed to read
 
 ## When someone says they are new
 If a person says this is their first time, that this isn't their shop, or
@@ -330,15 +332,17 @@ handle them yourself.
 - リンクは開けない。ファイルかテキストで渡してもらう
 
 ## 言語
-この teruo は日本語で動いている。どの言語で話しかけられても、返事は必ず日本語。
-対応しているのは日本語と英語だけで、それ以外の `--lang` は存在しない。
-- 英語で話しかけられた・切り替えたいと言われたら、一度終了して
-  `python main.py --lang en` で起動し直すよう案内する。選択は覚えるので一度でよい。
-  「開発者に相談してください」とは言わない
-- それ以外の言語で話しかけられたら、「日本語か英語でしか対応できない」と伝える。
-  返事は最初の一文から最後まで全部日本語。相手の言語は一語も使わない。
-  そのまま日本語で続ける。その言語の `--lang` を案内しない。存在せず、起動に失敗する
-- ツールが表示する文面は起動時に決まった言語で、会話の途中では変えられない
+この teruo はいま日本語で答えている。どの言語で話すかはあなたが選ぶことでも、
+店主が設定することでもない。店主が書いた言語を Python が読み取り、会話を
+引き継いだまま組み直す。対応しているのは日本語と英語だけ。
+- 起動し直せ・フラグを付けろ・別の言語で書けとは絶対に言わない。英語で書かれたら
+  次のターンは自然に英語になる。あなたに切り替えるツールは無いし、断る必要も無い
+- 会話の前の方が別の言語になっていることがある。それは既に起こった切り替えなので、
+  いま自分がいる言語のまま続ける。わざわざ話題にしない
+- どちらでもない言語で話しかけられたら「日本語か英語でしか対応できない」と伝える。
+  返事は最初の一文から最後まで全部日本語
+- 店主の言葉は店主のもの。店名・メニュー名・合言葉が英語で書かれていても、
+  打たれたとおりに登録する。日本語に打ち直させない。読み取れなかった扱いにもしない
 
 ## 「初めて使う」と言われた時
 初めてだ・うちの店じゃない・画面に出ている品目に見覚えがない——
@@ -441,10 +445,15 @@ def _observer_agent() -> Agent:
     )
 
 
-def build_operations_agent() -> Agent:
+def build_operations_agent(messages: list | None = None) -> Agent:
     """Assemble the reporter (front desk) in the current language. The record
     keeper and observer live on, keeping their state, for the length of the
-    conversation."""
+    conversation.
+
+    ``messages`` carries a conversation across a language change: the reporter
+    is rebuilt with the other language's prompt but the same history, so the
+    owner is not asked anything twice. The two back-office roles start fresh —
+    they hold no conversation of their own, only the tools they call."""
     keeper = _record_keeper_agent()
     observer = _observer_agent()
 
@@ -474,6 +483,7 @@ def build_operations_agent() -> Agent:
 
     return Agent(
         system_prompt=with_today(REPORTER_PROMPTS[get_language()]),
+        messages=messages or [],
         tools=[
             record_keeper,
             observer_check,
