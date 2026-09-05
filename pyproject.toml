@@ -9,6 +9,8 @@ dependencies = [
     "fastapi==0.141.1",
     "uvicorn==0.52.4",
     "python-multipart==0.0.32",
+    # export_excel writes the .xlsx workbook. CSV export needs none of these.
+    "openpyxl==3.1.5",
 ]
 
 [dependency-groups]

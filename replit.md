@@ -49,9 +49,10 @@ Japanese with English translations in docs/*.en.md.
 - All arithmetic runs in Python tools, never in the model.
 - Menu photos and spreadsheets are read by handing the raw bytes to Bedrock as
   Converse image/document content blocks (`attachments.py`); nothing is parsed
-  locally, so there is no openpyxl/OCR dependency. Anything read this way is a
-  proposal — the prompts require showing it and getting a yes before a tool is
-  called (design doc ch.9). URLs are refused in Python, not by the model:
+  locally, so no spreadsheet parser or OCR library reads them (openpyxl is a
+  dependency, but only so `export_excel` can *write* an .xlsx). Anything read
+  this way is a proposal — the prompts require showing it and getting a yes
+  before a tool is called (design doc ch.9). URLs are refused in Python, not by the model:
   external access stays out of scope (instructions appendix A).
 - The browser entry point is an entry point and nothing more. `web.py` calls
   the same `main.build_agent`, and `tools.set_output_sink` (a ContextVar, so it
@@ -61,6 +62,11 @@ Japanese with English translations in docs/*.en.md.
   page shows tool and role activity inline so agents-as-tools is visible.
   One shop, one conversation, one message at a time (asyncio lock — Strands
   refuses concurrent invocations on one Agent).
+  `tools.set_file_sink` is the same idea for files: an export writes real files
+  and the CLI's printed path is the hand-over, but a browser cannot reach a
+  path, so web.py turns each written file into a token-addressed download link.
+  Tokens are the only addresses the browser gets, so there is no path to
+  traverse.
 - A stranger reaching an already-configured teruo is a prompt-level guard, not
   an auth feature: reads (stock, sales, reconciliation) are deliberately
   passphrase-free for staff, so the reporter is told to stop before showing

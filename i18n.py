@@ -104,6 +104,116 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     "known_ids_none": {"en": "(none)", "ja": "（なし）"},
 
+    # --- The clock both entry points open with ---
+    "clock": {"en": "{date} ({weekday}) {time}", "ja": "{date}（{weekday}）{time}"},
+    "weekday_mon": {"en": "Mon", "ja": "月"},
+    "weekday_tue": {"en": "Tue", "ja": "火"},
+    "weekday_wed": {"en": "Wed", "ja": "水"},
+    "weekday_thu": {"en": "Thu", "ja": "木"},
+    "weekday_fri": {"en": "Fri", "ja": "金"},
+    "weekday_sat": {"en": "Sat", "ja": "土"},
+    "weekday_sun": {"en": "Sun", "ja": "日"},
+    # The project's own one-line description (README), plus the clock. Says
+    # what this is and that it knows what day it is, before anything else.
+    "intro": {
+        "en": "teruo — an inventory agent for food trucks and street stalls. {clock}",
+        "ja": "teruo — キッチンカー・屋台のための在庫管理エージェント。{clock}",
+    },
+    # Once onboarding has learned whose shop this is, the opening line says so.
+    "intro_named": {
+        "en": "teruo — the inventory agent for {shop}. {clock}",
+        "ja": "teruo — {shop}のための在庫管理エージェント。{clock}",
+    },
+
+    "today_note": {
+        "en": "\n\nToday is {today}. Take the date from here, never from memory — build any YYYY-MM argument off it.",
+        "ja": "\n\n今日は {today} です。日付はここから取り、記憶で補わないこと。YYYY-MM の引数もここから組み立てる。",
+    },
+
+    # --- export_csv ---
+    "export_none": {
+        "en": "There is nothing to export yet.",
+        "ja": "書き出せる記録がまだありません。",
+    },
+    "export_no_records_for_month": {
+        "en": "No records for {month}.",
+        "ja": "{month}の記録はありません。",
+    },
+    "export_months_available": {
+        "en": "Months that do have records: {months}",
+        "ja": "記録のある月: {months}",
+    },
+    "export_failed": {
+        "en": "Could not write the files: {reason}",
+        "ja": "ファイルを書き出せませんでした: {reason}",
+    },
+    "export_done": {
+        "en": "Wrote {count} spreadsheet files to {folder} ({period}):",
+        "ja": "{folder} に表計算ファイルを{count}件書き出しました（{period}）:",
+    },
+    "export_line": {
+        "en": "- {file} — {label}, {rows} rows",
+        "ja": "- {file} — {label}、{rows}行",
+    },
+    "export_period_all": {"en": "all records", "ja": "全期間"},
+    "export_open_hint": {
+        "en": "Five separate files, for feeding another system — accounting software, a script. To just look at the records, or to hand them to someone, ask for Excel instead: that is one file, and Google Sheets opens it as five tabs. Purchase costs are not recorded, so there is no money column for purchases.",
+        "ja": "別のシステムに読ませるための5ファイルです（会計ソフト、スクリプトなど）。見るだけ・人に渡すだけなら Excel のほうが1ファイルで済み、Google スプレッドシートでも5タブとして開けます。仕入れ金額は記録していないため、仕入れに金額の列はありません。",
+    },
+    "export_label_sales": {"en": "sales", "ja": "売上"},
+    "export_label_purchases": {"en": "purchases", "ja": "仕入れ"},
+    "export_label_counts": {"en": "stock counts", "ja": "棚卸し"},
+    "export_label_stock": {"en": "stock right now", "ja": "現在の在庫"},
+    "export_label_recipes": {"en": "recipes", "ja": "レシピ"},
+
+    # --- export_excel ---
+    "excel_done": {
+        "en": "Wrote one Excel workbook to {path} ({period}) — {count} sheets:",
+        "ja": "{path} に Excel ファイルを書き出しました（{period}）。シートは{count}枚:",
+    },
+    "excel_line": {
+        "en": "- {label}, {rows} rows",
+        "ja": "- {label}、{rows}行",
+    },
+    "excel_open_hint": {
+        "en": "One file, five sheets — hand it over as it is. Excel opens it, and so does Google Sheets (drop it in Drive; the five sheets become five tabs). Numbers are real numbers, so a sum or a pivot works. Purchase costs are not recorded, so there is no money column for purchases.",
+        "ja": "1ファイルに5シート、そのまま渡せます。Excel でも Google スプレッドシートでも開けます（Drive に入れると5シートが5タブになります）。数値は数値として入っているので、合計もピボットもそのまま使えます。仕入れ金額は記録していないため、仕入れに金額の列はありません。",
+    },
+    "excel_unavailable": {
+        "en": "Excel output needs the openpyxl library, which is not installed. Install it with 'pip install openpyxl', or ask for CSV instead — the CSV files open in Excel too.",
+        "ja": "Excel 形式の書き出しには openpyxl が必要ですが、入っていません。'pip install openpyxl' で入れるか、CSV で書き出してください（CSV も Excel で開けます）。",
+    },
+
+    # --- export_csv column headers ---
+    "csv_date": {"en": "date", "ja": "日付"},
+    "csv_time": {"en": "time", "ja": "時刻"},
+    "csv_venue": {"en": "venue", "ja": "出店形態"},
+    "csv_product_id": {"en": "product_id", "ja": "商品ID"},
+    "csv_product": {"en": "product", "ja": "商品名"},
+    "csv_quantity": {"en": "quantity", "ja": "数量"},
+    "csv_unit_price": {"en": "unit_price", "ja": "単価"},
+    "csv_revenue": {"en": "revenue", "ja": "売上金額"},
+    "csv_item_id": {"en": "item_id", "ja": "品目ID"},
+    "csv_item": {"en": "item", "ja": "品目名"},
+    "csv_amount": {"en": "amount", "ja": "数量"},
+    "csv_unit": {"en": "unit", "ja": "単位"},
+    "csv_units": {"en": "units", "ja": "本数・袋数"},
+    "csv_purchase_unit": {"en": "purchase_unit", "ja": "仕入れ単位"},
+    "csv_estimated": {"en": "estimated", "ja": "目安値"},
+    "csv_actual_stock": {"en": "counted", "ja": "実測"},
+    "csv_book_stock": {"en": "book_value", "ja": "理論値"},
+    "csv_gap": {"en": "gap", "ja": "差"},
+    "csv_coef_before": {"en": "coefficient_before", "ja": "係数（前）"},
+    "csv_coef_after": {"en": "coefficient_after", "ja": "係数（後）"},
+    "csv_stock": {"en": "stock", "ja": "在庫"},
+    "csv_consumption_type": {"en": "consumption_type", "ja": "消費型"},
+    "csv_coefficient": {"en": "coefficient", "ja": "係数"},
+    "csv_last_counted": {"en": "last_counted", "ja": "最終棚卸し"},
+    "csv_price": {"en": "price", "ja": "価格"},
+    "csv_qty_per_serving": {"en": "qty_per_serving", "ja": "1食あたり"},
+    "csv_yes": {"en": "yes", "ja": "はい"},
+    "csv_no": {"en": "no", "ja": "いいえ"},
+
     # --- get_recipes ---
     "recipes_none": {"en": "No products registered.", "ja": "商品が登録されていません。"},
     "recipes_line": {
@@ -566,8 +676,16 @@ MESSAGES: dict[str, dict[str, str]] = {
 
     # --- update_config ---
     "config_nothing": {
-        "en": "Specify what to set (new_passphrase or new_notify_email).",
-        "ja": "設定内容（new_passphrase または new_notify_email）を指定してください。",
+        "en": "Specify what to set (new_shop_name, new_passphrase or new_notify_email).",
+        "ja": "設定内容（new_shop_name / new_passphrase / new_notify_email）を指定してください。",
+    },
+    "log_shop_name_set": {
+        "en": "Shop name set: {shop}",
+        "ja": "店名を設定: {shop}",
+    },
+    "shop_name_set": {
+        "en": "Noted — this is {shop}'s teruo from now on.",
+        "ja": "覚えました。これからは{shop}の teruo です。",
     },
     "log_passphrase_set": {"en": "Passphrase set", "ja": "合言葉を設定しました"},
     "hidden": {"en": "(hidden)", "ja": "（非表示）"},
@@ -594,8 +712,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "言語 {value} は使えません。--lang en か --lang ja を指定してください。",
     },
     "cli_counseling_start": {
-        "en": "teruo — starting the onboarding interview (about 10 minutes; progress is saved if you stop midway).",
-        "ja": "teruo — 初回カウンセリングを始めます（10分ほど。途中でやめても保存されます）。",
+        "en": "Starting the onboarding interview (about 10 minutes; progress is saved if you stop midway).",
+        "ja": "初回カウンセリングを始めます（10分ほど。途中でやめても保存されます）。",
     },
     "cli_counseling_kickoff": {
         "en": "Begin the onboarding interview. Ask your first question.",
@@ -606,8 +724,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "処理できませんでした: {error}",
     },
     "cli_welcome": {
-        "en": "teruo — inventory agent. Type exit to quit.",
-        "ja": "teruo — 在庫管理エージェントです。終了するには exit と入力してください。",
+        "en": "Sales, stock counts, purchases — tell me as they happen. Type exit to quit.",
+        "ja": "売上・棚卸し・仕入れ、その都度お知らせください。終了は exit。",
     },
 
     # --- Files handed to teruo (attachments.py) ---
@@ -653,6 +771,10 @@ MESSAGES: dict[str, dict[str, str]] = {
     "web_fact_badge": {"en": "calculated in Python", "ja": "Pythonが計算"},
     "web_working": {"en": "working", "ja": "処理中"},
     "web_drop_hint": {"en": "Drop to hand over", "ja": "ドロップで渡す"},
+    "web_download_hint": {
+        "en": "Ready to download:",
+        "ja": "ダウンロードできます:",
+    },
     "web_busy": {
         "en": "Still working on the previous message — one at a time.",
         "ja": "前のメッセージを処理中です。1件ずつお願いします。",
@@ -662,8 +784,8 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "初回カウンセリング中 — お店の構成を登録しています。10分ほど。途中でやめても保存されます。",
     },
     "web_greeting": {
-        "en": "teruo is ready. Sales, stock counts, purchases — tell me as they happen.",
-        "ja": "teruoです。売上・棚卸し・仕入れ、その都度お知らせください。",
+        "en": "Sales, stock counts, purchases — tell me as they happen.",
+        "ja": "売上・棚卸し・仕入れ、その都度お知らせください。",
     },
     "web_disconnected": {
         "en": "The connection dropped. Entries already made are saved; reload to carry on.",
@@ -682,6 +804,8 @@ MESSAGES: dict[str, dict[str, str]] = {
     "tool_get_sales_summary": {"en": "Totalling sales", "ja": "売上を集計"},
     "tool_get_capacity": {"en": "Checking servings left", "ja": "残り食数を確認"},
     "tool_get_recipes": {"en": "Reading recipes", "ja": "レシピを確認"},
+    "tool_export_csv": {"en": "Writing spreadsheet files", "ja": "表計算ファイルを書き出し"},
+    "tool_export_excel": {"en": "Writing an Excel file", "ja": "Excel ファイルを書き出し"},
     "tool_get_monthly_reconciliation": {"en": "Monthly reconciliation", "ja": "月次突合"},
     "tool_register_item": {"en": "Registering an item", "ja": "品目を登録"},
     "tool_register_product": {"en": "Registering a product", "ja": "商品を登録"},

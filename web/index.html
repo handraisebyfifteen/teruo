@@ -69,6 +69,17 @@
     color: var(--accent); margin-bottom: 7px;
   }
 
+  /* Files an export wrote. The path a tool prints is unreachable from a
+     browser, so the hand-over is a link. */
+  .files { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .files .label { font-size: 12px; color: var(--muted); }
+  .files a {
+    font-size: 13px; padding: 5px 11px; border-radius: 3px;
+    background: var(--panel); border: 1px solid var(--accent);
+    color: var(--accent); text-decoration: none;
+  }
+  .files a:hover { background: var(--fact); }
+
   /* The activity strip: which role or tool is running right now. */
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .chip {
@@ -82,6 +93,12 @@
     animation: pulse 1.1s ease-in-out infinite;
   }
   @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .25 } }
+
+  /* The opening line: date, time, and what this is. Stated, not warned. */
+  .intro {
+    font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line);
+    padding-bottom: 9px; letter-spacing: .01em;
+  }
 
   .note {
     font-size: 13px; color: var(--warn); background: #fdf6e8;
@@ -172,6 +189,13 @@ function turn(role, label) {
 
 function toBottom() {
   log.scrollTop = log.scrollHeight;
+}
+
+function intro(text) {
+  const node = turn("system", "");
+  node.querySelector(".who").remove();
+  node.append(el("div", "intro", text));
+  toBottom();
 }
 
 function note(text, bad) {
@@ -304,6 +328,16 @@ function apply(event, node, chips, working, said) {
     block.append(el("span", "badge", strings.web_fact_badge));
     block.append(document.createTextNode(event.text));
     node.insertBefore(block, said);
+  } else if (event.type === "files") {
+    const block = el("div", "files");
+    block.append(el("span", "label", strings.web_download_hint));
+    for (const file of event.files) {
+      const link = el("a", null, file.name);
+      link.href = file.url;
+      link.download = file.name;
+      block.append(link);
+    }
+    node.insertBefore(block, said);
   } else if (event.type === "text") {
     said.textContent += event.delta;
   } else if (event.type === "note") {
@@ -328,6 +362,9 @@ function apply(event, node, chips, working, said) {
   textarea.placeholder = strings.web_placeholder;
   sendButton.textContent = strings.web_send;
   dropOverlay.textContent = strings.web_drop_hint;
+
+  // Date, time, and what this is — first, in either mode, as the CLI does.
+  intro(config.intro);
 
   if (config.counseling) {
     const banner = document.getElementById("banner");

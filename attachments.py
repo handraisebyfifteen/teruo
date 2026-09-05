@@ -3,7 +3,8 @@
 The owner can hand teruo a menu photo or a spreadsheet instead of typing
 everything out. Strands models its ``ContentBlock`` on the Bedrock Converse
 API, which already carries images and documents, so nothing is parsed here —
-the bytes go to the model as they are (no openpyxl, no OCR library).
+the bytes go to the model as they are (no spreadsheet parser, no OCR library).
+Writing a spreadsheet is a separate matter: see export_excel in tools.py.
 
 Reading a URL is deliberately not supported. External access is out of scope
 (instructions appendix A), so a pasted link gets a plain refusal from Python

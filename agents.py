@@ -25,9 +25,11 @@ from __future__ import annotations
 
 from strands import Agent, tool
 
-from i18n import get_language
+from i18n import get_language, t
 from tools import (
     delete_product,
+    export_csv,
+    export_excel,
     get_capacity,
     get_monthly_reconciliation,
     get_recipes,
@@ -40,6 +42,7 @@ from tools import (
     register_item,
     register_product,
     reset_shop,
+    today,
     update_config,
     update_item,
     update_recipe,
@@ -155,6 +158,15 @@ You never record or tally anything yourself. The work is split three ways:
   and the exact product and item IDs. Never guess an ID, and never say a
   recipe is unknown or unregistered without looking
 - Never do arithmetic yourself. Always use a role's or a tool's result
+- When the owner wants the records outside teruo — a file, a spreadsheet, a
+  copy for an accountant, "send me the month" — call export_excel, which
+  writes one .xlsx. That covers Google Sheets too, which opens an .xlsx as
+  one document of five tabs. Call export_csv only if they ask for CSV by name
+  or name a system that takes CSV. Say where the file landed. Purchase costs
+  are not recorded, so never imply the export is a full set of books
+- If the owner tells you what to call the shop — a name, their own name, "we
+  are X" — save it with update_config's new_shop_name. It becomes the first
+  line of every startup from then on. Don't ask for it unprompted
 
 ## Facts are printed by the tools (principle 3)
 When a tool or role reply contains "[Already shown on screen", that content
@@ -288,6 +300,16 @@ handle them yourself.
   商品ID・品目IDがそのまま出る。IDを推測しない。見ずに「レシピは分からない・
   未登録」と言わない
 - 数値の計算は自分でしない。必ず係かツールの結果を使う
+- 記録を teruo の外に出したい時——ファイルが欲しい、エクセルで欲しい、
+  スプレッドシートで見たい、税理士に渡したい、今月分をまとめて——は
+  export_excel を呼ぶ（.xlsx が1ファイル）。Google スプレッドシートもこれでよい。
+  .xlsx は1つの文書の5タブとして開くため。
+  CSV を名指しされた時、または会計ソフトなど CSV を受け取る側を名指しされた時だけ
+  export_csv を使う。書き出し先の場所を伝える。
+  仕入れ金額は記録していないので、帳簿一式が揃うかのようには言わない
+- 店の呼び名を言われたら——店名、店主自身の名前、「うちは〇〇です」——
+  update_config の new_shop_name で保存する。以後の起動時の1行目になる。
+  こちらから催促はしない
 
 ## 事実はツールが直接表示する（原則3）
 ツールや係の返答に「[画面に表示済み〜]」とあれば、その内容は既に店主の画面に出ています。
@@ -382,9 +404,16 @@ handle them yourself.
 }
 
 
+def with_today(prompt: str) -> str:
+    """Stamp the current date onto a system prompt. The model has no clock,
+    so without this "August" becomes a guess at the year (observed: it read
+    the demo month as 2024-08)."""
+    return prompt + t("today_note", today=today())
+
+
 def _record_keeper_agent() -> Agent:
     return Agent(
-        system_prompt=RECORD_KEEPER_PROMPTS[get_language()],
+        system_prompt=with_today(RECORD_KEEPER_PROMPTS[get_language()]),
         tools=[
             record_sales,
             record_count,
@@ -398,11 +427,13 @@ def _record_keeper_agent() -> Agent:
 
 def _observer_agent() -> Agent:
     return Agent(
-        system_prompt=OBSERVER_PROMPTS[get_language()],
+        system_prompt=with_today(OBSERVER_PROMPTS[get_language()]),
         tools=[
             get_stock_status,
             get_recipes,
             get_sales_summary,
+            export_csv,
+            export_excel,
             get_capacity,
             get_monthly_reconciliation,
         ],
@@ -442,11 +473,13 @@ def build_operations_agent() -> Agent:
         return str(observer(request))
 
     return Agent(
-        system_prompt=REPORTER_PROMPTS[get_language()],
+        system_prompt=with_today(REPORTER_PROMPTS[get_language()]),
         tools=[
             record_keeper,
             observer_check,
             get_recipes,
+            export_csv,
+            export_excel,
             register_item,
             register_product,
             update_recipe,
