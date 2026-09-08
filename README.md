@@ -94,6 +94,11 @@ Register these as Replit Secrets. Never put the values in code or a `.env`.
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_DEFAULT_REGION` (`us-east-2`)
 
+## Interfaces
+
+teruo can be driven from the chat-style web UI or from the CLI.
+**Both call the same Python tools.** Calculation lives in exactly one place.
+
 ## Running
 
 ```bash

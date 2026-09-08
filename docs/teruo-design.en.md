@@ -874,12 +874,29 @@ get_stock_status / get_monthly_reconciliation can be used by anyone.
 
 ## 9. Input Entry Points
 
-| Method | Implementation effort | Impact | Priority |
+| Method | Implementation effort | Impact | Status |
 |---|---|---|---|
-| Paste a note | Light | High | 1 |
+| **Chat UI (web)** | — | High | **Implemented** |
+| CLI | — | Medium | **Implemented** (calls the same calculation layer as the UI) |
+| Paste a note | Light | High | **1** (from either the UI or the CLI) |
 | CSV / spreadsheet | Medium | Medium | 2 |
-| Menu scan | Light (no screen needed after all) | High | Implemented |
+| Menu scan | Light (no screen needed after all) | High | Implemented (from either the UI or the CLI) |
 | Delivery slip scan | — | Low | No separate build (same path) |
+
+### Chat UI and CLI (one calculation layer)
+
+The plan was CLI only. A chat-style web UI was added during development,
+because that this is an agent only comes across in the form of a conversation.
+
+**The UI and the CLI call the same Python tools.**
+There are two entry points for display and one place where calculation happens.
+
+- No calculation logic on the JavaScript side
+- The `state.json` write guard (§7, concurrent writes) applies through the UI exactly as it does at the CLI
+- Every operation reachable from the UI is reachable from the CLI. No UI-only features
+
+Once that separation breaks, the UI and the CLI show different numbers.
+At that point neither number can be trusted.
 
 ### Paste a note (record_purchase)
 
@@ -906,6 +923,18 @@ Once implemented, no screen was needed. Typing a file name on the CLI line
 hands over a photo or a spreadsheet (`attachments.py`). The model reads it
 directly, so no spreadsheet library and no OCR are involved. A delivery slip
 goes through the same path, so a separate "delivery slip scan" is moot.
+In the web UI the same path is reached by dropping a file or using the attach button.
+
+**A scan yields `product` and `price` and nothing else.**
+`qty` (75 g of meat) is written nowhere on a menu. The same goes for
+`unit_type` and `tier`: they are settled only by the answer to "is it the
+same amount every time you plate it?" A scan saves typing; **it does not
+replace the counseling.**
+
+A plausible misread goes unnoticed. Text too smudged to read fails visibly;
+a "¥1,200" read wrong does not. Prices listed with and without tax, or option
+lines like "large +¥100", get mistaken for products. That is why the
+confirmation after reading is mandatory: never register silently.
 
 ## 10. Demo Setup (Kebab Food Truck)
 

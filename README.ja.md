@@ -67,6 +67,11 @@ Replit Secretsへ次を登録してください。値をコードや`.env`へ書
 - `AWS_SECRET_ACCESS_KEY`
 - `AWS_DEFAULT_REGION`（`us-east-2`）
 
+## インターフェース
+
+チャット形式の Web UI と CLI の両方から操作できます。
+**どちらも同じ Python ツール群を呼びます。** 計算は一箇所にしかありません。
+
 ## 起動
 
 ```bash
