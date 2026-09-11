@@ -341,9 +341,22 @@ async function stream(request) {
   }
 }
 
+// The model sometimes writes **bold**. Show it as bold, not as asterisks.
+// Built from text nodes, so nothing the model writes can become markup.
+function render(node, text) {
+  node.replaceChildren();
+  for (const part of text.split(/(\*\*[^*\n]+\*\*)/)) {
+    if (/^\*\*[^*\n]+\*\*$/.test(part)) node.append(el("strong", null, part.slice(2, -2)));
+    else if (part) node.append(document.createTextNode(part));
+  }
+}
+
 function apply(event, node, chips, working, said) {
   if (event.type === "tool") {
     chips.insertBefore(el("span", "chip", event.label), working);
+    // Text after a tool call is a new message from the model. Without a break
+    // it runs straight into the previous one ("Great name!Saved!").
+    said.breakBefore = true;
   } else if (event.type === "fact") {
     // Python's own output. Kept verbatim, marked, never re-typed by the model.
     const block = el("div", "fact");
@@ -361,7 +374,10 @@ function apply(event, node, chips, working, said) {
     }
     node.insertBefore(block, said);
   } else if (event.type === "text") {
-    said.textContent += event.delta;
+    if (said.breakBefore && said.raw) said.raw += "\n\n";
+    said.breakBefore = false;
+    said.raw = (said.raw || "") + event.delta;
+    render(said, said.raw);
   } else if (event.type === "note") {
     node.append(el("div", "note", event.text));
   } else if (event.type === "error") {

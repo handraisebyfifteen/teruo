@@ -298,3 +298,303 @@ The authoritative source is `docs/teruo-design.md` (design doc B).
 
 MIT License (see `LICENSE`).
 Uses the [Strands Agents SDK](https://github.com/strands-agents/sdk-python) (Apache 2.0).
+# teruo
+
+An inventory agent for food trucks and street stalls.
+The name comes from the English "tell". It doesn't calculate for show, it doesn't act — it only tells.
+
+An interactive CLI that reduces stock from sales via recipes, and keeps
+learning and correcting consumption coefficients from real measurements —
+stock counts and emptied units.
+
+*日本語版は [README.ja.md](README.ja.md) にあります。*
+
+## Why it exists
+
+Food-truck inventory never shrinks the way the books say. Meat portioned
+with tongs varies by hand — the recipe's 75g becomes 80g or 90g in practice.
+So teruo never trusts the theoretical number; it learns a consumption
+coefficient from physical counts and keeps correcting it.
+
+The other reason is timing. An alert in the middle of the lunch rush cannot
+be acted on — information you can't act on is just noise. The only time
+decisions can be made is before opening, so during service teruo states
+short facts only and never asks for a decision. Fitting the way time works
+on a food truck is the center of the design.
+
+Saying "still learning" forever is also banned. Learning is cut off after
+5 stock counts or 2 weeks; if the coefficient still hasn't settled, teruo
+reports candidate causes instead of excuses.
+
+## Every item counts differently
+
+Managing all stock in grams doesn't match the counter. Sauce arrives as one
+commercial bottle and nobody ever weighed its contents. An onion has a fixed
+"servings per piece". The real-world unit isn't "20g × N servings" —
+**it's "how many servings does one bottle last?"**
+
+So consumption counting splits three ways, and the coefficient logic
+branches with it.
+
+| consumption_type | Examples | What the coefficient means | How it's learned |
+|---|---|---|---|
+| `count` | pita bread, napkins | — | it isn't (fixed at 1.0) |
+| `weight` | meat, rice | real consumption per serving | from stock-count differences |
+| `unit` | sauce, oil, onions | servings per unit | settled the moment a unit is emptied |
+
+Unit-tracked items never measure partial contents — nobody knows whether an
+open bottle is "30% left". But the moment it goes empty is certain, so
+**teruo learns from confirmed facts only.** More accurate than weighing, and
+lighter to implement.
+
+The type is never guessed from the item's name. The same onion is used by
+the piece in one shop and by the hotel-pan tub in another. Which one it is
+comes from the onboarding question: "When you use it, what do you count
+as one?"
+
+The measurement system is also decided at onboarding — grams or ounces
+(g/kg/ml or oz/lb/fl oz). Everything after that stays in the shop's own
+system, and same-kind unit conversions (g→kg, oz→g, ...) are automatic.
+
+## When the numbers don't add up
+
+Coefficient learning is itself an attack surface. Under-report a stock count
+and the coefficient rises — from then on that much consumption looks
+"normal" and disappears. So corrections beyond the physical limit of
+portioning variance (±4g per serving — about 0.14oz; the cap is defined in
+grams and converted to whichever measurement system the shop chose at
+onboarding, metric or imperial) are refused. At the cap, learning
+stops and teruo says the recipe itself may need a review.
+
+When the book value dips below zero, it is neither clamped to 0 nor treated
+as an error. A negative number is information — "the estimate ran ahead of
+reality" — and rounding it away destroys the very material that corrects the
+coefficient. What would actually hurt is being unable to enter sales
+mid-service. The number is never displayed; teruo only says a recount is
+needed.
+
+And **who entered a number is never recorded.** The moment an entry can be
+held against you, people stop entering honestly, the coefficient learns
+nonsense, and teruo stops working. It's an ethical stance and a functional
+requirement at the same time.
+
+Gaps that stay inside the daily threshold still show up when accumulated
+over a month (2g/serving × 100 servings × 25 days = 5kg).
+`get_monthly_reconciliation` cross-checks purchases, recipe-basis
+consumption, and physical counts. But teruo cannot tell causes apart —
+missed records, waste, and shrinkage all surface as the same "less than the
+books say". So it never points at a culprit; it states the facts and the
+out-of-band gap, nothing more.
+
+## Required environment variables
+
+Register these as Replit Secrets. Never put the values in code or a `.env`.
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_DEFAULT_REGION` (`us-east-2`)
+
+## Interfaces
+
+teruo can be driven from the chat-style web UI or from the CLI.
+**Both call the same Python tools.** Calculation lives in exactly one place.
+
+## Running
+
+```bash
+python main.py
+```
+
+- With no items and no products registered (an empty `data/state.json`),
+  the onboarding interview starts
+- `python main.py --setup` forces the onboarding interview to run again
+  (on top of the current data — it does not clear anything)
+- To start over as a new shop, say "reset" in the conversation. teruo asks
+  for the passphrase (if one is set) and a yes, sets the current
+  `data/state.json` aside under a dated name, and runs onboarding right there
+- Type `exit` or `quit` to leave
+
+## What you see at startup
+
+Both the CLI and the browser open with one line: the date, the time, and whose
+shop this is. Onboarding asks for the name, so until then the line is generic.
+
+```
+teruo — an inventory agent for food trucks and street stalls. 2026-09-05 (Sat) 09:32   <- first run
+teruo — the inventory agent for Kebab House. 2026-09-05 (Sat) 09:32                    <- once it has a name
+```
+
+The name lives in `config.shop_name`. A shop's name, the owner's own name, or
+nothing at all — declining just keeps the generic line. Saying "we're Kebab
+House" later is enough; `update_config` picks it up.
+
+The clock is Python's, in `Asia/Tokyo` — the same clock the records are
+stamped from. No model call, so there is no wait and nothing to pay for. A
+machine running on a wrong clock or in another timezone shows itself here,
+before the first sale is recorded rather than at the month's reconciliation.
+A missing or corrupt state.json falls back to the generic line rather than
+stopping startup.
+
+## The one-screen version
+
+```bash
+python web.py     # then open http://localhost:5000
+```
+
+The same teruo, reached through a browser instead of a terminal. One screen:
+you type at the bottom, the conversation runs above it, and files are dropped
+anywhere on the page.
+
+What the screen shows while teruo works is the point of it. The roles it hands
+work to appear inline as they run — **Record keeper**, **Observer** — so the
+agents-as-tools structure is visible rather than claimed. Numbers that Python
+calculated arrive in their own block, marked *calculated in Python*, and are
+never re-typed by the model (principle 3). The model's own words sit outside
+that block.
+
+Nothing under the hood changed to make this work. `web.py` builds the agent
+through the same `main.build_agent` the CLI uses, and `tools.set_output_sink`
+points the facts at the browser instead of stdout. The calculation layer, the
+state, the judgment layer and the wording are untouched — which is the claim
+this entry point exists to demonstrate. Both entry points remain; run whichever
+suits the room.
+
+Single shop, no login — the same shape as the CLI. One message at a time.
+
+## Handing teruo a file
+
+Type a file name on the prompt line, with or without words around it:
+
+```
+> this is our menu  menu_photo.png
+> stocktake sheet.xlsx
+> "delivery slip Mar 3.pdf" came in this morning
+```
+
+Photos (`png` `jpg` `gif` `webp`) and documents (`xlsx` `xls` `csv` `pdf`
+`docx` `doc` `html` `txt` `md`) are read by the model directly — nothing is
+parsed on the way in, so no spreadsheet library reads them. Paths may
+contain spaces, quoted or not.
+
+teruo always shows what it read and waits for a yes before recording
+anything; a misread price is caught there, not in the stock figures a week
+later. Up to 5 files per line (about 3.7 MB per photo, 4.5 MB per document).
+
+**Links are not read.** teruo has no external access by design — no
+scraping, no map or review-site APIs (instructions appendix A). Save the page
+as a photo or a file and hand it over that way.
+
+## Getting a file back out
+
+Ask for a spreadsheet — "give me August for the accountant" — and
+`export_excel` writes one `.xlsx`. Five sheets: sales, purchases, stock
+counts, stock right now, recipes. Quantities are real numbers with the unit
+in its own column, so a SUM or a pivot works straight away, and dates are
+dates (standard 1900-epoch serials, so nothing lands four years off).
+
+**This is also the right answer for Google Sheets.** Dropped into Drive, the
+five sheets become five tabs of one document; five CSVs would become five
+separate documents. `export_csv` earns its keep somewhere else — feeding
+another system, such as accounting software or a script (`utf-8-sig`, so
+Excel opens them without mojibake).
+
+Both write into `data/exports/<month or all>/`. The CLI prints that path; the
+one-screen version (`web.py`) turns each written file into a download link on
+screen, because a browser cannot reach a path.
+
+Purchase costs are not recorded anywhere in teruo. The purchases sheet has no
+money column, and the export is not a full set of books.
+
+## Language
+
+teruo answers in the language the owner writes in. Write to it in Japanese
+and it switches — prompts, tool output, and the web screen's own wording —
+carries the conversation over, and saves the choice, so this is not something
+the owner ever has to be told. The switch is decided in Python
+(`i18n.detect_language`, `main.follow_owner_language`) and is deliberately
+conservative: a menu item in the other script is not a language change.
+
+A launch opens in English unless told otherwise. To open in Japanese:
+
+```bash
+python main.py --lang ja
+```
+
+The choice is saved to `data/state.json` (`config.language`) — by the flag
+and by the owner's own writing alike — so later launches need no flag. `TERUO_LANG=ja` does the same for one environment
+without writing to `state.json` (a developer's own preference stays out of
+the repo). `data/state.ja.json`
+is the same demo shop with Japanese item names and counters (枚 / 本 / 個):
+
+```bash
+INVENTORY_STATE_PATH=data/state.ja.json python main.py
+```
+
+Every on-screen string lives in `i18n.py` next to its translation; the
+calculation code is shared. The design docs are written in Japanese and
+have English translations alongside (`docs/*.en.md`).
+
+## Files
+
+- `main.py`: the CLI loop (operations mode / onboarding mode), language selection, `build_agent`
+- `web.py` + `web/index.html`: the one-screen browser entry point (same agent, facts routed to the page)
+- `agents.py`: the judgment layer's three agents (reporter, record keeper, observer), prompts in both languages
+- `attachments.py`: turns file names typed at the prompt into image/document content blocks
+- `tools.py`: the calculation tools (recording, registration, queries)
+- `i18n.py`: every user-facing string, English and Japanese side by side
+- `store.py`: reads/writes `data/state.json` (atomic writes, concurrent-write detection)
+- `data/state.json`: stock, recipes, history, settings (`data/state.ja.json`: the Japanese demo shop)
+- `tests/simulate_convergence.py`: the coefficient convergence simulation
+
+## Architecture
+
+![teruo architecture](docs/architecture.svg)
+
+All calculation (stock reduction, coefficient learning) happens in Python
+tools; the AI handles judgment only. The judgment layer follows the design
+doc's three judgments, split into three agents (Strands' agents-as-tools
+pattern):
+
+- **Reporter (front desk)**: decides when to say what. Stays quiet during
+  service. Structure changes (passphrase) go through it directly with the owner
+- **Record keeper**: takes sales, stock counts, and purchases and records
+  them via Python tools. Makes no judgments
+- **Observer**: spots anomalies and narrows today's stock-count request to
+  2-3 items
+
+## Does the coefficient actually converge?
+
+The core claim — "it learns the hand's error" — is verified with machine-
+generated data over 20 business days against a known true coefficient
+(`python tests/simulate_convergence.py`).
+
+![coefficient convergence chart](tests/convergence.png)
+
+- With portioning drift inside the cap (recipe ±4g/serving), the
+  coefficient converges to the true value within 3-5 stock counts
+  (the mean from count 5 on is 0.6% off the true value)
+- Drift beyond the cap stops at the cap and becomes a recipe-review warning
+  (principle 12)
+- One-sheet-per-serving paper goods (`count` type) never move from 1.0
+- Adopting a single count in full chased daily variance (±5%) and
+  oscillated, so the update rule moves halfway toward the measured value
+  (found in verification, folded back into the design doc)
+
+## Design principles
+
+The authoritative source is `docs/teruo-design.md` (design doc B).
+
+- Python calculates, AI judges. Never let the model do mental math
+- Book values are placeholders; real measurements (stock counts, emptied
+  units) correct them
+- The coefficient has a physical cap — closing the loophole where daily
+  entries quietly rewrite the recipe
+- Structure changes (recipes, units, item registry) require a passphrase and
+  log before/after values
+- Nothing is deleted. Items are hidden with `active: false`; history is
+  append-only
+
+## License
+
+MIT License (see `LICENSE`).
+Uses the [Strands Agents SDK](https://github.com/strands-agents/sdk-python) (Apache 2.0).

@@ -37,7 +37,14 @@ def _digest(raw: bytes) -> str:
 
 def load_state() -> dict[str, Any]:
     global _loaded_digest
-    raw = STATE_PATH.read_bytes()
+    try:
+        raw = STATE_PATH.read_bytes()
+    except FileNotFoundError:
+        # A shop not set up yet. Onboarding registers into an empty state and
+        # its first save creates the file; failing here would leave nothing
+        # able to save at all.
+        _loaded_digest = None
+        return {"products": [], "items": [], "history": []}
     _loaded_digest = _digest(raw)
     return json.loads(raw.decode("utf-8"))
 
