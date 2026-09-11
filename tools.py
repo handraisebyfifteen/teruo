@@ -912,10 +912,12 @@ def get_stock_status() -> str:
         last_display = _fmt_dt(last_counted) if last_counted else t("never_counted")
         if ctype == "unit":
             coefficient = item.get("coefficient")
+            # No coefficient yet: the growth label already says "unlearned",
+            # so the line leaves the coefficient out rather than say it twice.
             coef_display = (
                 t("status_coef_unit", coef=float(coefficient), unit=item["unit"])
                 if coefficient
-                else t("status_unlearned")
+                else ""
             )
             opened_at = item.get("opened_at_sales_count")
             opened_note = ""
@@ -924,7 +926,7 @@ def get_stock_status() -> str:
                 opened_note = t("status_open_note", unit=item["unit"], used=used)
             lines.append(
                 t(
-                    "status_line_unit",
+                    "status_line_unit" if coefficient else "status_line_unit_unlearned",
                     name=item["name"],
                     id=item["id"],
                     stock=_display_stock(item),
@@ -1010,7 +1012,7 @@ def get_sales_summary() -> str:
                 )
             )
         blocks.append("\n".join(lines))
-    return "\n\n".join(blocks)
+    return _tell("\n\n".join(blocks))
 
 
 @tool

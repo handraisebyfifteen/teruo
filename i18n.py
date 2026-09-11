@@ -395,7 +395,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "ja": "（あと約{servings}食分）",
     },
     "unit_used_result": {
-        "en": "{name}: {servings} servings from that {unit}. {count} records → ≈{coef:.0f} servings per {unit}. {stock} left{capacity_note}.",
+        "en": "{name}: {servings} servings from that {unit}. Empties recorded: {count} → ≈{coef:.0f} servings per {unit}. {stock} left{capacity_note}.",
         "ja": "{name}: 1{unit}で{servings}食でした。実績{count}回 → 1{unit}≈{coef:.0f}食。残り{stock}{capacity_note}。",
     },
 
@@ -432,7 +432,6 @@ MESSAGES: dict[str, dict[str, str]] = {
         "en": "≈{coef:.0f} servings per {unit}",
         "ja": "1{unit}≈{coef:.0f}食",
     },
-    "status_unlearned": {"en": "unlearned", "ja": "未学習"},
     "status_open_note": {
         "en": ", open {unit} at serving {used}",
         "ja": "、開封中の1{unit}は{used}食目",
@@ -440,6 +439,10 @@ MESSAGES: dict[str, dict[str, str]] = {
     "status_line_unit": {
         "en": "- {name} [{id}]: {stock}, {coef}, {growth}{opened_note}, last counted {last}",
         "ja": "- {name} [{id}]: {stock}、{coef}、{growth}{opened_note}、最終棚卸し {last}",
+    },
+    "status_line_unit_unlearned": {
+        "en": "- {name} [{id}]: {stock}, {growth}{opened_note}, last counted {last}",
+        "ja": "- {name} [{id}]: {stock}、{growth}{opened_note}、最終棚卸し {last}",
     },
     "status_line_count": {
         "en": "- {name} [{id}]: {stock}, coefficient fixed, last counted {last}",
